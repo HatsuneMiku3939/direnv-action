@@ -1,5 +1,8 @@
-name: 'Wait'
-description: 'Wait a designated number of milliseconds'
+name: 'direnv action'
+description: 'Privides environment variables via direnv'
+branding:
+  icon: play
+  color: green
 runs:
   using: 'node12'
   main: 'dist/index.js'
