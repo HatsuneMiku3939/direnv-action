@@ -22,3 +22,6 @@ No outputs
 ```yaml
 uses: HatsuneMiku3939/direnv-action@v1
 ```
+
+
+
