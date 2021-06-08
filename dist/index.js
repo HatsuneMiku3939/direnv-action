@@ -128,7 +128,7 @@ const cp = __webpack_require__(129);
 async function run() {
   try {
     core.info(`Download direnv ...`)
-    cp.execSync('curl -sfL https://direnv.net/install.sh | bash > /dev/null 2>&1', { encoding: "utf-8" });
+    cp.execSync('sudo apt-get install direnv', { encoding: "utf-8" });
 
     cp.execSync('direnv allow', { encoding: "utf-8" });
     const envs = JSON.parse(cp.execSync('direnv export json', { encoding: "utf-8" }));
