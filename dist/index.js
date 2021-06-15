@@ -124,12 +124,29 @@ exports.issueCommand = issueCommand;
 const core = __webpack_require__(470);
 const cp = __webpack_require__(129);
 
+async function download() {
+  try {
+    cp.execSync(`command -v direnv`, { encoding: "utf-8"} )
+  }
+  catch (error) {
+    core.info(`Download direnv via apt-get...`);
+    try {
+      cp.execSync('sudo apt-get install direnv', { encoding: "utf-8" });
+      core.info(`  Success!`);
+    }
+    catch (error2) {
+      core.info(`  Failure... `)
+      core.info(`Download direnv via curl...`)
+      cp.execSync('curl -sfL https://direnv.net/install.sh | bash > /dev/null 2>&1', { encoding: "utf-8" });
+      core.info(`  Success!`);
+    }
+  }
+}
+
 // most @actions toolkit packages have async methods
 async function run() {
   try {
-    core.info(`Download direnv ...`)
-    cp.execSync('sudo apt-get install direnv', { encoding: "utf-8" });
-
+    download();
     cp.execSync('direnv allow', { encoding: "utf-8" });
     const envs = JSON.parse(cp.execSync('direnv export json', { encoding: "utf-8" }));
 
