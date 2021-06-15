@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const cp = require("child_process");
 
-async function download() {
+async function install() {
   try {
     cp.execSync(`command -v direnv`, { encoding: "utf-8"} )
   }
@@ -23,7 +23,7 @@ async function download() {
 // most @actions toolkit packages have async methods
 async function run() {
   try {
-    download();
+    install();
     cp.execSync('direnv allow', { encoding: "utf-8" });
     const envs = JSON.parse(cp.execSync('direnv export json', { encoding: "utf-8" }));
 

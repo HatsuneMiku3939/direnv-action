@@ -124,7 +124,7 @@ exports.issueCommand = issueCommand;
 const core = __webpack_require__(470);
 const cp = __webpack_require__(129);
 
-async function download() {
+async function install() {
   try {
     cp.execSync(`command -v direnv`, { encoding: "utf-8"} )
   }
@@ -146,7 +146,7 @@ async function download() {
 // most @actions toolkit packages have async methods
 async function run() {
   try {
-    download();
+    install();
     cp.execSync('direnv allow', { encoding: "utf-8" });
     const envs = JSON.parse(cp.execSync('direnv export json', { encoding: "utf-8" }));
 
