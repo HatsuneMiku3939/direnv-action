@@ -131,7 +131,7 @@ async function download() {
   catch (error) {
     core.info(`Download direnv via apt-get...`);
     try {
-      cp.execSync('sudo apt-get install direnv', { encoding: "utf-8" });
+      cp.execSync('sudo apt-get install -y direnv', { encoding: "utf-8" });
       core.info(`  Success!`);
     }
     catch (error2) {
