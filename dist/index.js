@@ -123,6 +123,7 @@ exports.issueCommand = issueCommand;
 
 const core = __webpack_require__(470);
 const cp = __webpack_require__(129);
+const fs = __webpack_require__(747);
 
 async function install() {
   try {
@@ -146,18 +147,25 @@ async function install() {
 // most @actions toolkit packages have async methods
 async function run() {
   try {
-    install();
-    cp.execSync('direnv allow', { encoding: "utf-8" });
-    const envs = JSON.parse(cp.execSync('direnv export json', { encoding: "utf-8" }));
+    // If there's no .envrc, skip all this
+    if(fs.existsSync(".envrc")) {
+      install();
+      cp.execSync('direnv allow', { encoding: "utf-8" });
+      const envs = JSON.parse(cp.execSync('direnv export json', { encoding: "utf-8" }));
 
-    Object.keys(envs).forEach(function (name) {
-      const value = envs[name];
-      core.exportVariable(name, value);
-    });
+      Object.keys(envs).forEach(function (name) {
+        const value = envs[name];
+        core.exportVariable(name, value);
+      });
+    } else {
+      core.info(`.envrc not found, skipping direnv allow`);
+    }
   }
+  // We still want all other errors to fail the action.
   catch (error) {
     core.setFailed(error.message);
   }
+
 }
 
 run()
