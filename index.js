@@ -1,34 +1,61 @@
 const core = require('@actions/core');
-const cp = require("child_process");
+const tc = require('@actions/tool-cache');
+const exec = require('@actions/exec');
 
-const envrcPath = '.envrc';
+const direnvVersion = '2.32.1';
 
 // internal functions
-function installTools() {
-  core.info(`Download direnv ...`)
-  cp.execSync('curl -sfL https://direnv.net/install.sh | bash > /dev/null 2>&1', { encoding: "utf-8" });
+async function installTools() {
+  // test direnv in cache
+  const testInCache = tc.find('direnv', direnvVersion);
+  if (!testInCache) {
+    core.info('direnv not found in cache, installing...');
+    const installPath = await tc.downloadTool(`https://github.com/direnv/direnv/releases/download/v${direnvVersion}/direnv.linux-amd64`);
+
+    // set permissions
+    core.info(`direnv installed ${installPath}, setting permissions...`);
+    await exec.exec('chmod', ['+x', installPath]);
+
+    // cache direnv
+    core.info('direnv installed successfuly, caching...');
+    await tc.cacheFile(installPath, `direnv-${direnvVersion}`, 'direnv', direnvVersion);
+  } else {
+    core.info('direnv found in cache');
+  }
+
+  // find direnv from cache
+  const direnvPath = tc.find('direnv', direnvVersion);
+  core.addPath(direnvPath);
 }
 
-function allowEnvrc() {
-  cp.execSync(`direnv allow ${envrcPath}`, { encoding: "utf-8" });
+async function allowEnvrc() {
+  core.info('allowing envrc...');
+  await exec.exec(`direnv-${direnvVersion}`, ['allow']);
 }
 
-function exportEnvrc() {
-  const envs = JSON.parse(cp.execSync('direnv export json', { encoding: "utf-8" }));
-  return envs;
+async function exportEnvrc() {
+  let outputBuffer = '';
+  const options = {};
+  options.listeners = {
+    stdout: (data) => {
+      outputBuffer += data.toString();
+    }
+  };
+  await exec.exec(`direnv-${direnvVersion}`, ['export', 'json'], options);
+  return JSON.parse(outputBuffer);
 }
 
 // action entrypoint
 async function main() {
   try {
     // install direnv
-    installTools();
+    await installTools();
 
     // allow given envrc
-    allowEnvrc();
+    await allowEnvrc();
 
     // export envrc to json
-    const envs = exportEnvrc();
+    const envs = await exportEnvrc();
 
     // set envs
     Object.keys(envs).forEach(function (name) {
@@ -42,4 +69,4 @@ async function main() {
 }
 
 // run action
-main()
+main();
