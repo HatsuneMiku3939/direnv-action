@@ -1,15 +1,36 @@
 const core = require('@actions/core');
 const cp = require("child_process");
 
-// most @actions toolkit packages have async methods
-async function run() {
+const envrcPath = '.envrc';
+
+// internal functions
+function installTools() {
+  core.info(`Download direnv ...`)
+  cp.execSync('curl -sfL https://direnv.net/install.sh | bash > /dev/null 2>&1', { encoding: "utf-8" });
+}
+
+function allowEnvrc() {
+  cp.execSync(`direnv allow ${envrcPath}`, { encoding: "utf-8" });
+}
+
+function exportEnvrc() {
+  const envs = JSON.parse(cp.execSync('direnv export json', { encoding: "utf-8" }));
+  return envs;
+}
+
+// action entrypoint
+async function main() {
   try {
-    core.info(`Download direnv ...`)
-    cp.execSync('curl -sfL https://direnv.net/install.sh | bash > /dev/null 2>&1', { encoding: "utf-8" });
+    // install direnv
+    installTools();
 
-    cp.execSync('direnv allow', { encoding: "utf-8" });
-    const envs = JSON.parse(cp.execSync('direnv export json', { encoding: "utf-8" }));
+    // allow given envrc
+    allowEnvrc();
 
+    // export envrc to json
+    const envs = exportEnvrc();
+
+    // set envs
     Object.keys(envs).forEach(function (name) {
       const value = envs[name];
       core.exportVariable(name, value);
@@ -20,4 +41,5 @@ async function run() {
   }
 }
 
-run()
+// run action
+main()
