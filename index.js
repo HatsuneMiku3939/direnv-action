@@ -1,14 +1,19 @@
 const core = require('@actions/core');
 const tc = require('@actions/tool-cache');
 const exec = require('@actions/exec');
+const cache = require('@actions/cache');
 
 const direnvVersion = '2.32.1';
 
 // internal functions
 async function installTools() {
+  const cacheKey = `hatsunemiku3939-direnv-action-${direnvVersion}`;
+  const paths = ['/opt/direnv/bin'];
+  const restoreKeys = [`hatsunemiku3939-direnv-action-`];
+
   // test direnv in cache
-  const testInCache = tc.find('direnv', direnvVersion);
-  if (!testInCache) {
+  const foundInCache = await cache.restoreCache(paths, cacheKey, restoreKeys);
+  if (!foundInCache) {
     core.info('direnv not found in cache, installing...');
     const installPath = await tc.downloadTool(`https://github.com/direnv/direnv/releases/download/v${direnvVersion}/direnv.linux-amd64`);
 
@@ -16,21 +21,23 @@ async function installTools() {
     core.info(`direnv installed ${installPath}, setting permissions...`);
     await exec.exec('chmod', ['+x', installPath]);
 
-    // cache direnv
-    core.info('direnv installed successfuly, caching...');
-    await tc.cacheFile(installPath, `direnv-${direnvVersion}`, 'direnv', direnvVersion);
+    // move to /opt/direnv/bin
+    await exec.exec('mkdir', ['-p', '/opt/direnv/bin']);
+    await exec.exec('mv', [installPath, '/opt/direnv/bin/direnv']);
+
+    // save to cache
+    await cache.saveCache(paths, cacheKey);
   } else {
     core.info('direnv found in cache');
   }
 
-  // find direnv from cache
-  const direnvPath = tc.find('direnv', direnvVersion);
-  core.addPath(direnvPath);
+  // add to path
+  core.addPath('/opt/direnv/bin');
 }
 
 async function allowEnvrc() {
   core.info('allowing envrc...');
-  await exec.exec(`direnv-${direnvVersion}`, ['allow']);
+  await exec.exec(`direnv`, ['allow']);
 }
 
 async function exportEnvrc() {
@@ -41,7 +48,7 @@ async function exportEnvrc() {
       outputBuffer += data.toString();
     }
   };
-  await exec.exec(`direnv-${direnvVersion}`, ['export', 'json'], options);
+  await exec.exec(`direnv`, ['export', 'json'], options);
   return JSON.parse(outputBuffer);
 }
 
