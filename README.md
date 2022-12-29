@@ -1,7 +1,6 @@
 
-<p align="center">
-  <a href="https://github.com/HatsuneMiku3939/direnv-action/actions"><img alt="direnv-action status" src="https://github.com/HatsuneMiku3939/direnv-action/workflows/units-test/badge.svg"></a>
-</p>
+<a href="https://github.com/HatsuneMiku3939/direnv-action/actions"><img alt="direnv-action status" src="https://github.com/HatsuneMiku3939/direnv-action/workflows/units-test/badge.svg"></a>
+
 
 # direnv action
 
@@ -22,3 +21,5 @@ No outputs
 ```yaml
 uses: HatsuneMiku3939/direnv-action@v1
 ```
+
+This will load `.envrc` residing at the top of the repository.
