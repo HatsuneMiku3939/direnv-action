@@ -20,5 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - run: printenv
     - uses: ./
     - run: printenv | grep DIRENV_ACTION_TEST
+    - run: echo $PATH | grep $(pwd)/bin
+    - run: printenv
