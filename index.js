@@ -48,6 +48,7 @@ async function exportEnvrc() {
       outputBuffer += data.toString();
     }
   };
+  core.info('exporting envrc...');
   await exec.exec(`direnv`, ['export', 'json'], options);
   return JSON.parse(outputBuffer);
 }
@@ -67,7 +68,13 @@ async function main() {
     // set envs
     Object.keys(envs).forEach(function (name) {
       const value = envs[name];
-      core.exportVariable(name, value);
+
+      if (name === 'PATH') {
+        core.info(`detected PATH in .envrc, appending to PATH...`);
+        core.addPath(value);
+      } else {
+        core.exportVariable(name, value);
+      }
     });
   }
   catch (error) {
