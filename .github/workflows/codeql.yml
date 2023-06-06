@@ -71,4 +71,26 @@ jobs:
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
       with:
-        category: "/language:${{matrix.language}}"
+        upload: False
+        output: sarif-results
+
+    - name: filter-sarif
+      uses: advanced-security/filter-sarif@v1
+      with:
+        patterns: |
+          -dist/**
+          -**/*test*.js
+        input: sarif-results/javascript.sarif
+        output: sarif-results/javascript.sarif
+
+    - name: Upload SARIF
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: sarif-results/javascript.sarif
+
+    - name: Upload loc as a Build Artifact
+      uses: actions/upload-artifact@v2.2.0
+      with:
+        name: sarif-results
+        path: sarif-results
+        retention-days: 1
