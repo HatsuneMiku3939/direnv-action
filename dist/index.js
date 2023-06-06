@@ -3705,6 +3705,8 @@ const direnvVersion = '2.32.1';
 
 // internal functions
 async function installTools() {
+  core.info("installing direnv...");
+
   // test direnv in cache
   const foundToolCache = tc.find('direnv', direnvVersion);
   if (foundToolCache) {
@@ -3718,7 +3720,7 @@ async function installTools() {
 
     // restore from cache
     core.info('direnv not found in tool-cache, restoring from cache...');
-    const cacheKey = await cache.restoreCache(paths, key, restoreKeys);
+    const cacheKey = await cache.restoreCache(paths.slice(), key, restoreKeys);
     if (cacheKey) {
       core.info(`direnv restored from cache, key: ${cacheKey}`);
 
