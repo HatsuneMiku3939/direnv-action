@@ -12,15 +12,29 @@ jobs:
   units:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
     - run: npm ci
     - run: npm test
 
-  # test action works running from the graph
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+    - run: printenv
+    - uses: ./
+      with:
+        direnvVersion: 2.32.3
+    - run: printenv | grep DIRENV_ACTION_TEST
+    - run: echo $PATH | grep $(pwd)/bin
+    - run: printenv
+
+  test-default-option:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
     - run: printenv
     - uses: ./
     - run: printenv | grep DIRENV_ACTION_TEST
