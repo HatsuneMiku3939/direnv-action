@@ -26,6 +26,7 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: 16
+    - run: npm ci
     - run: npm run prepare
     - uses: ./
       with:
@@ -41,6 +42,7 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: 16
+    - run: npm ci
     - run: npm run prepare
     - uses: ./
     - run: printenv | grep DIRENV_ACTION_TEST
@@ -58,6 +60,7 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: 16
+    - run: npm ci
     - run: npm run prepare
     - run: |
         git diff --stat --exit-code
