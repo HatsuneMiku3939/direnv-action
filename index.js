@@ -1,20 +1,20 @@
 const core = require('@actions/core');
 const tc = require('@actions/tool-cache');
 const exec = require('@actions/exec');
-const cache = require('@actions/cache');
 
 const direnvVersion = '2.32.1';
 
 // internal functions
 async function installTools() {
-  const runner_tmp = process.env['RUNNER_TEMP'];
-  const cacheKey = `hatsunemiku3939-direnv-action-${direnvVersion}`;
-  const paths = [`${runner_tmp}/direnv/bin`];
-  const restoreKeys = [`hatsunemiku3939-direnv-action-`];
+  // const runner_tmp = process.env['RUNNER_TEMP'];
+  // const cacheKey = `hatsunemiku3939-direnv-action-${direnvVersion}`;
+  // const paths = [`${runner_tmp}/direnv/bin`];
+  // const restoreKeys = ['hatsunemiku3939-', 'hatsunemiku3939-direnv-', 'hatsunemiku3939-direnv-action-'];
 
   // test direnv in cache
-  const foundInCache = await cache.restoreCache(paths, cacheKey, restoreKeys);
-  if (!foundInCache) {
+  // const keyFoundInCache = await cache.restoreCache(paths, cacheKey, restoreKeys);
+  const foundCachedPath = tc.find('direnv', direnvVersion);
+  if (!foundCachedPath) {
     core.info('direnv not found in cache, installing...');
     const installPath = await tc.downloadTool(`https://github.com/direnv/direnv/releases/download/v${direnvVersion}/direnv.linux-amd64`);
 
@@ -22,18 +22,20 @@ async function installTools() {
     core.info(`direnv installed ${installPath}, setting permissions...`);
     await exec.exec('chmod', ['+x', installPath]);
 
-    // move to /opt/direnv/bin
-    await exec.exec('mkdir', ['-p', `${runner_tmp}/direnv/bin`]);
-    await exec.exec('mv', [installPath, `${runner_tmp}/direnv/bin/direnv`]);
+    // rename to direnv
+    core.info(`renaming executable to direnv...`);
+    await exec.exec('cp', [installPath, `direnv`]);
 
-    // save to cache
-    await cache.saveCache(paths, cacheKey);
+    // save tool-cache
+    core.info(`saving to tool-cache...`);
+    const cachedPath = await tc.cacheFile(installPath, 'direnv', 'direnv', direnvVersion);
+
+    // add to path
+    core.addPath(cachedPath);
   } else {
     core.info('direnv found in cache');
+    core.addPath(foundCachedPath);
   }
-
-  // add to path
-  core.addPath(`${runner_tmp}/direnv/bin`);
 }
 
 async function allowEnvrc() {
