@@ -1,40 +1,65 @@
 const core = require('@actions/core');
 const tc = require('@actions/tool-cache');
 const exec = require('@actions/exec');
+const cache = require('@actions/cache');
 
 const direnvVersion = '2.32.1';
 
 // internal functions
 async function installTools() {
-  // const runner_tmp = process.env['RUNNER_TEMP'];
-  // const cacheKey = `hatsunemiku3939-direnv-action-${direnvVersion}`;
-  // const paths = [`${runner_tmp}/direnv/bin`];
-  // const restoreKeys = ['hatsunemiku3939-', 'hatsunemiku3939-direnv-', 'hatsunemiku3939-direnv-action-'];
-
   // test direnv in cache
-  // const keyFoundInCache = await cache.restoreCache(paths, cacheKey, restoreKeys);
-  const foundCachedPath = tc.find('direnv', direnvVersion);
-  if (!foundCachedPath) {
-    core.info('direnv not found in cache, installing...');
-    const installPath = await tc.downloadTool(`https://github.com/direnv/direnv/releases/download/v${direnvVersion}/direnv.linux-amd64`);
-
-    // set permissions
-    core.info(`direnv installed ${installPath}, setting permissions...`);
-    await exec.exec('chmod', ['+x', installPath]);
-
-    // rename to direnv
-    core.info(`renaming executable to direnv...`);
-    await exec.exec('cp', [installPath, `direnv`]);
-
-    // save tool-cache
-    core.info(`saving to tool-cache...`);
-    const cachedPath = await tc.cacheFile(installPath, 'direnv', 'direnv', direnvVersion);
-
-    // add to path
-    core.addPath(cachedPath);
+  const foundToolCache = tc.find('direnv', direnvVersion);
+  if (foundToolCache) {
+    core.info('direnv found in tool-cache');
+    core.addPath(foundToolCache);
   } else {
-    core.info('direnv found in cache');
-    core.addPath(foundCachedPath);
+    const workspace = process.env['GITHUB_WORKSPACE'];
+    const key = `hatsunemiku3939-direnv-action-toolcache-${direnvVersion}`;
+    const paths = [`${workspace}/.direnv-action`];
+    const restoreKeys = [key];
+
+    // restore from cache
+    core.info('direnv not found in tool-cache, restoring from cache...');
+    const cacheKey = await cache.restoreCache(paths, key, restoreKeys);
+    if (cacheKey) {
+      core.info(`direnv restored from cache, key: ${cacheKey}`);
+
+      // save tool-cache
+      core.info(`saving to tool-cache...`);
+      const cachedPath = await tc.cacheFile(`${workspace}/.direnv-action/direnv`, 'direnv', 'direnv', direnvVersion);
+
+      // add to path
+      core.addPath(cachedPath);
+
+      // clear
+      await exec.exec('rm', [`-rf`, `${workspace}/.direnv-action`]);
+    } else {
+      core.info('direnv not found in cache, installing...');
+      const installPath = await tc.downloadTool(`https://github.com/direnv/direnv/releases/download/v${direnvVersion}/direnv.linux-amd64`);
+
+      // set permissions
+      core.info(`direnv installed ${installPath}, setting permissions...`);
+      await exec.exec('chmod', ['+x', installPath]);
+
+      // rename to direnv
+      core.info(`renaming executable to direnv...`);
+      await exec.exec('mkdir', [`${workspace}/.direnv-action`]);
+      await exec.exec('cp', [installPath, `${workspace}/.direnv-action/direnv`]);
+
+      // save to cache
+      core.info(`saving to cache...`);
+      await cache.saveCache(paths, key);
+
+      // save tool-cache
+      core.info(`saving to tool-cache...`);
+      const cachedPath = await tc.cacheFile(installPath, 'direnv', 'direnv', direnvVersion);
+
+      // add to path
+      core.addPath(cachedPath);
+
+      // clear
+      await exec.exec('rm', [`-rf`, `${workspace}/.direnv-action`]);
+    }
   }
 }
 
