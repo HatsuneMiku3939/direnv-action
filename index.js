@@ -7,8 +7,9 @@ const direnvVersion = '2.32.1';
 
 // internal functions
 async function installTools() {
+  const runner_tmp = process.env['RUNNER_TEMP'];
   const cacheKey = `hatsunemiku3939-direnv-action-${direnvVersion}`;
-  const paths = ['/opt/direnv/bin'];
+  const paths = [`${runner_tmp}/direnv/bin`];
   const restoreKeys = [`hatsunemiku3939-direnv-action-`];
 
   // test direnv in cache
@@ -22,8 +23,8 @@ async function installTools() {
     await exec.exec('chmod', ['+x', installPath]);
 
     // move to /opt/direnv/bin
-    await exec.exec('mkdir', ['-p', '/opt/direnv/bin']);
-    await exec.exec('mv', [installPath, '/opt/direnv/bin/direnv']);
+    await exec.exec('mkdir', ['-p', `${runner_tmp}/direnv/bin`]);
+    await exec.exec('mv', [installPath, `${runner_tmp}/direnv/bin/direnv`]);
 
     // save to cache
     await cache.saveCache(paths, cacheKey);
@@ -32,7 +33,7 @@ async function installTools() {
   }
 
   // add to path
-  core.addPath('/opt/direnv/bin');
+  core.addPath(`${runner_tmp}/direnv/bin`);
 }
 
 async function allowEnvrc() {
