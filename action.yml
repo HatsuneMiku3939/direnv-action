@@ -3,6 +3,11 @@ description: 'Privides environment variables via direnv'
 branding:
   icon: play
   color: green
+inputs:
+  direnvVersion:
+    description: 'direnv version to use'
+    required: true
+    default: '2.32.1'
 runs:
   using: 'node16'
   main: 'dist/index.js'

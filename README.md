@@ -10,7 +10,7 @@ This action provides environment variables via [direnv](https://direnv.net/),
 
 ## Inputs
 
-No inputs
+- `direnvVersion`: The version of direnv to use. Default: `2.32.1`
 
 ## Outputs
 
@@ -20,6 +20,8 @@ No outputs
 
 ```yaml
 uses: HatsuneMiku3939/direnv-action@v1
+with:
+  direnvVersion: 2.32.1
 ```
 
 This will load `.envrc` residing at the top of the repository.

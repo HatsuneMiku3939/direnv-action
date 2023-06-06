@@ -16,8 +16,19 @@ jobs:
     - run: npm ci
     - run: npm test
 
-  # test action works running from the graph
   test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: printenv
+    - uses: ./
+      with:
+        direnvVersion: 2.32.3
+    - run: printenv | grep DIRENV_ACTION_TEST
+    - run: echo $PATH | grep $(pwd)/bin
+    - run: printenv
+
+  test-default-option:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2

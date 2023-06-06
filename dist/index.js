@@ -3701,11 +3701,11 @@ const tc = __webpack_require__(533);
 const exec = __webpack_require__(986);
 const cache = __webpack_require__(692);
 
-const direnvVersion = '2.32.1';
 
 // internal functions
 async function installTools() {
-  core.info("installing direnv...");
+  const direnvVersion = core.getInput('direnvVersion');
+  core.info(`installing direnv-${direnvVersion}...`);
 
   // test direnv in cache
   const foundToolCache = tc.find('direnv', direnvVersion);

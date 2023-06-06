@@ -3,11 +3,11 @@ const tc = require('@actions/tool-cache');
 const exec = require('@actions/exec');
 const cache = require('@actions/cache');
 
-const direnvVersion = '2.32.1';
 
 // internal functions
 async function installTools() {
-  core.info("installing direnv...");
+  const direnvVersion = core.getInput('direnvVersion');
+  core.info(`installing direnv-${direnvVersion}...`);
 
   // test direnv in cache
   const foundToolCache = tc.find('direnv', direnvVersion);
