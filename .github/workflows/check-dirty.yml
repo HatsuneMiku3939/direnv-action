@@ -1,0 +1,18 @@
+name: "check-dirty"
+on:
+  pull_request:
+    branches:
+      - v1
+
+jobs:
+  check-dirty:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+    - run: npm ci
+    - run: npm run prepare
+    - run: |
+        git diff --stat --exit-code
