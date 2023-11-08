@@ -78,9 +78,26 @@ async function exportEnvrc() {
       outputBuffer += data.toString();
     }
   };
+  options.silent = true;
+
   core.info('exporting envrc...');
   await exec.exec(`direnv`, ['export', 'json'], options);
   return JSON.parse(outputBuffer);
+}
+
+async function setMasks(envs) {
+  const rawMaskList = core.getInput('masks');
+  const maskList = rawMaskList.split(',').map(function (mask) {
+    return mask.trim();
+  });
+  core.info(`setting masks: ${maskList.join(', ')}`);
+
+  maskList.forEach(function (mask) {
+    const value = envs[mask];
+    if (value) {
+      core.setSecret(value);
+    }
+  });
 }
 
 // action entrypoint
@@ -106,6 +123,9 @@ async function main() {
         core.exportVariable(name, value);
       }
     });
+
+    // set masks
+    await setMasks(envs);
   }
   catch (error) {
     core.setFailed(error.message);
