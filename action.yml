@@ -4,6 +4,10 @@ branding:
   icon: play
   color: green
 inputs:
+  masks:
+    description: 'Comma seprated list of environment variables to mask'
+    required: true
+    default: ''
   direnvVersion:
     description: 'direnv version to use'
     required: true

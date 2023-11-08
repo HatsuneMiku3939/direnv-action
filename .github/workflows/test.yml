@@ -30,6 +30,7 @@ jobs:
     - run: npm run prepare
     - uses: ./
       with:
+        masks: SECRET1, SECRET2
         direnvVersion: 2.32.3
     - run: printenv | grep DIRENV_ACTION_TEST
     - run: echo $PATH | grep $(pwd)/bin
