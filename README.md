@@ -28,3 +28,7 @@ with:
 ```
 
 This will load `.envrc` residing at the top of the repository.
+
+## Contributors
+
+
