@@ -3,11 +3,45 @@ const tc = require('@actions/tool-cache');
 const exec = require('@actions/exec');
 const cache = require('@actions/cache');
 
+const { platform } = require('node:process');
+const { arch } = require('node:process');
+
+function direnvBinaryURL(version, platform, arch) {
+  const baseurl = `https://github.com/direnv/direnv/releases/download/v${version}/direnv`
+
+  // supported arch: x64, arm64
+  // supported platform: linux, darwin
+  const supportedArch = ['x64', 'arm64'];
+  const supportedPlatform = ['linux', 'darwin'];
+
+  if (!supportedArch.includes(arch)) {
+    throw new Error(`unsupported arch: ${arch}`);
+  }
+
+  if (!supportedPlatform.includes(platform)) {
+    throw new Error(`unsupported platform: ${platform}`);
+  }
+
+  const archPlatform = `${platform}-${arch}`;
+
+  switch (archPlatform) {
+    case 'linux-x64':
+      return `${baseurl}.linux-amd64`;
+    case 'linux-arm64':
+      return `${baseurl}.linux-arm64`;
+    case 'darwin-x64':
+      return `${baseurl}.darwin-amd64`;
+    case 'darwin-arm64':
+      return `${baseurl}.darwin-arm64`;
+    default:
+      throw new Error(`unsupported platform: ${archPlatform}`);
+  }
+}
 
 // internal functions
 async function installTools() {
   const direnvVersion = core.getInput('direnvVersion');
-  core.info(`installing direnv-${direnvVersion}...`);
+  core.info(`installing direnv-${direnvVersion} on ${platform}-${arch}`);
 
   // test direnv in cache
   const foundToolCache = tc.find('direnv', direnvVersion);
@@ -16,7 +50,7 @@ async function installTools() {
     core.addPath(foundToolCache);
   } else {
     const workspace = process.env['GITHUB_WORKSPACE'];
-    const key = `hatsunemiku3939-direnv-action-toolcache-${direnvVersion}`;
+    const key = `hatsunemiku3939-direnv-action-toolcache-${direnvVersion}-${platform}-${arch}`;
     const paths = [`${workspace}/.direnv-action`];
     const restoreKeys = [key];
 
@@ -36,8 +70,9 @@ async function installTools() {
       // clear
       await exec.exec('rm', [`-rf`, `${workspace}/.direnv-action`]);
     } else {
-      core.info('direnv not found in cache, installing...');
-      const installPath = await tc.downloadTool(`https://github.com/direnv/direnv/releases/download/v${direnvVersion}/direnv.linux-amd64`);
+      const dlUrl = direnvBinaryURL(direnvVersion, platform, arch);
+      core.info(`direnv not found in cache, installing ${dlUrl} ...`);
+      const installPath = await tc.downloadTool(dlUrl);
 
       // set permissions
       core.info(`direnv installed ${installPath}, setting permissions...`);

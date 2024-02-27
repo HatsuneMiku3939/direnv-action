@@ -1,0 +1,43 @@
+name: "test"
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - main
+      - 'releases/*'
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-13, macos-14]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - run: npm ci
+    - run: npm run prepare
+    - uses: ./
+      with:
+        masks: SECRET1, SECRET2
+        direnvVersion: 2.32.3
+    - run: printenv | grep DIRENV_ACTION_TEST
+    - run: echo $PATH | grep $(pwd)/bin
+    - run: printenv
+
+  test-default-option:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - run: npm ci
+    - run: npm run prepare
+    - uses: ./
+    - run: printenv | grep DIRENV_ACTION_TEST
+    - run: echo $PATH | grep $(pwd)/bin
+    - run: printenv
