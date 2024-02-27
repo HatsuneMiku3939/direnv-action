@@ -71,7 +71,7 @@ async function installTools() {
       await exec.exec('rm', [`-rf`, `${workspace}/.direnv-action`]);
     } else {
       const dlUrl = direnvBinaryURL(direnvVersion, platform, arch);
-      core.info('direnv not found in cache, installing ${dlUrl} ...');
+      core.info(`direnv not found in cache, installing ${dlUrl} ...`);
       const installPath = await tc.downloadTool(dlUrl);
 
       // set permissions
