@@ -29,6 +29,19 @@ with:
 
 This will load `.envrc` residing at the top of the repository.
 
+## Supported platforms and architectures
+
+After v1.0.7, the following platforms and architectures are supported.
+
+| Platform | Architecture |
+|----------|--------------|
+| Linux    | x86_64       |
+| Linux    | arm64        |
+| Darwin   | x86_64       |
+| Darwin   | arm64        |
+
+version below v1.0.7, only `linux-x86_64` is supported.
+
 ## Contributors
 
 <table>
