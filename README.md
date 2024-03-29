@@ -13,6 +13,7 @@ This action provides environment variables via [direnv](https://direnv.net/),
 
 - `direnvVersion`: The version of direnv to use. Default: `2.32.1`
 - `masks`: Comma seprated list of environment variables to mask. Default: `''`
+- `path`: The directory for direnv to use. Default: `.`
 
 ## Outputs
 
@@ -62,4 +63,3 @@ version below v1.0.7, only `linux-x86_64` is supported.
     </td>
 </tr>
 </table>
-

@@ -24,8 +24,10 @@ jobs:
       with:
         masks: SECRET1, SECRET2
         direnvVersion: 2.32.3
+        path: child
     - run: printenv | grep DIRENV_ACTION_TEST
     - run: echo $PATH | grep $(pwd)/bin
+    - run: printenv | grep CHILD_ENV
     - run: printenv
 
   test-default-option:
