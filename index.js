@@ -101,8 +101,9 @@ async function installTools() {
 }
 
 async function allowEnvrc() {
-  core.info('allowing envrc...');
-  await exec.exec(`direnv`, ['allow']);
+  const pathToRc = core.getInput('path-to-rc');
+  core.info(`allowing envrc file ${pathToRc}...`);
+  await exec.exec(`direnv`, ['allow', pathToRc]);
 }
 
 async function exportEnvrc() {
