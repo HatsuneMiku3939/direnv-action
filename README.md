@@ -61,5 +61,19 @@ version below v1.0.7, only `linux-x86_64` is supported.
             <sub style="font-size:14px"><b>hopisaurus</b></sub>
         </a>
     </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/mdial89f>
+            <img src=https://avatars.githubusercontent.com/u/48921055?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Mike Dial/>
+            <br />
+            <sub style="font-size:14px"><b>Mike Dial</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/gidoichi>
+            <img src=https://avatars.githubusercontent.com/u/32694823?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=gidoichi/>
+            <br />
+            <sub style="font-size:14px"><b>gidoichi</b></sub>
+        </a>
+    </td>
 </tr>
 </table>
