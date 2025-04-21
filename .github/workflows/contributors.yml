@@ -1,6 +1,6 @@
 name: Add contributors
 on:
-  workflow_dispatch: {}  # 수동 트리거 허용
+  workflow_dispatch: {} 
   schedule:
     - cron:  '20 20 * * *'
 
