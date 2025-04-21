@@ -12,6 +12,10 @@ inputs:
     description: 'direnv version to use'
     required: true
     default: '2.32.1'
+  path:
+    description: "directory for direnv to use"
+    required: true
+    default: .
 runs:
   using: 'node20'
   main: 'dist/index.js'
