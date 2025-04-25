@@ -1,5 +1,5 @@
 
-[![units-test](https://github.com/HatsuneMiku3939/direnv-action/actions/workflows/test.yml/badge.svg)](https://github.com/HatsuneMiku3939/direnv-action/actions/workflows/test.yml)
+[![test](https://github.com/HatsuneMiku3939/direnv-action/actions/workflows/test.yaml/badge.svg)](https://github.com/HatsuneMiku3939/direnv-action/actions/workflows/test.yaml)
 [![CodeQL](https://github.com/HatsuneMiku3939/direnv-action/actions/workflows/codeql.yml/badge.svg)](https://github.com/HatsuneMiku3939/direnv-action/actions/workflows/codeql.yml)
 
 
@@ -13,6 +13,7 @@ This action provides environment variables via [direnv](https://direnv.net/),
 
 - `direnvVersion`: The version of direnv to use. Default: `2.32.1`
 - `masks`: Comma seprated list of environment variables to mask. Default: `''`
+- `path`: The directory for direnv to use. Default: `.`
 
 ## Outputs
 
@@ -60,6 +61,19 @@ version below v1.0.7, only `linux-x86_64` is supported.
             <sub style="font-size:14px"><b>hopisaurus</b></sub>
         </a>
     </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/mdial89f>
+            <img src=https://avatars.githubusercontent.com/u/48921055?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Mike Dial/>
+            <br />
+            <sub style="font-size:14px"><b>Mike Dial</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/gidoichi>
+            <img src=https://avatars.githubusercontent.com/u/32694823?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=gidoichi/>
+            <br />
+            <sub style="font-size:14px"><b>gidoichi</b></sub>
+        </a>
+    </td>
 </tr>
 </table>
-
