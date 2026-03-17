@@ -8,7 +8,7 @@ jobs:
   add-contributors:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: BobAnkh/add-contributors@master
       with:
         CONTRIBUTOR: '## Contributors'
@@ -17,5 +17,8 @@ jobs:
         IMG_WIDTH: '100'
         FONT_SIZE: '14'
         PATH: '/README.md'
+        BRANCH: 'contributors/update'
+        PULL_REQUEST: 'master'
         COMMIT_MESSAGE: 'docs(README): update contributors'
         AVATAR_SHAPE: 'round'
+        IGNORED_CONTRIBUTORS: 'devin-ai-integration'
