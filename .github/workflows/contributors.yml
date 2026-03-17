@@ -21,3 +21,4 @@ jobs:
         PULL_REQUEST: 'master'
         COMMIT_MESSAGE: 'docs(README): update contributors'
         AVATAR_SHAPE: 'round'
+        IGNORED_CONTRIBUTORS: 'devin-ai-integration'
