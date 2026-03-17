@@ -1,10 +1,9 @@
-const core = require('@actions/core');
-const tc = require('@actions/tool-cache');
-const exec = require('@actions/exec');
-const cache = require('@actions/cache');
+import * as core from '@actions/core';
+import * as tc from '@actions/tool-cache';
+import * as exec from '@actions/exec';
+import * as cache from '@actions/cache';
 
-const { platform } = require('node:process');
-const { arch } = require('node:process');
+import { platform, arch } from 'node:process';
 
 function direnvBinaryURL(version, platform, arch) {
   const baseurl = `https://github.com/direnv/direnv/releases/download/v${version}/direnv`

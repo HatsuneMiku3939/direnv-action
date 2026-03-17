@@ -2,11 +2,12 @@
   "name": "javascript-action",
   "version": "1.0.0",
   "description": "JavaScript Action Template",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "lint": "eslint index.js",
     "prepare": "ncc build index.js -o dist --source-map",
-    "test": "jest",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "all": "npm run lint && npm run prepare && npm run test"
   },
   "repository": {
@@ -25,9 +26,9 @@
   },
   "homepage": "https://github.com/actions/javascript-action#readme",
   "dependencies": {
-    "@actions/cache": "^4.0.3",
-    "@actions/core": "^1.11.1",
-    "@actions/exec": "^2.0.0",
+    "@actions/cache": "^6.0.0",
+    "@actions/core": "^3.0.0",
+    "@actions/exec": "^3.0.0",
     "@actions/tool-cache": "^2.0.2"
   },
   "devDependencies": {
