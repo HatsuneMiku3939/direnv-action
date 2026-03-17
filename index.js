@@ -1,7 +1,7 @@
-import core from '@actions/core';
-import tc from '@actions/tool-cache';
-import exec from '@actions/exec';
-import cache from '@actions/cache';
+import * as core from '@actions/core';
+import * as tc from '@actions/tool-cache';
+import * as exec from '@actions/exec';
+import * as cache from '@actions/cache';
 
 import { platform, arch } from 'node:process';
 
