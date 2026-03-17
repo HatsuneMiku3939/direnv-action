@@ -75,5 +75,12 @@ version below v1.0.7, only `linux-x86_64` is supported.
             <sub style="font-size:14px"><b>gidoichi</b></sub>
         </a>
     </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/aklinkert>
+            <img src=https://avatars.githubusercontent.com/u/1313774?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Alex Klinkert/>
+            <br />
+            <sub style="font-size:14px"><b>Alex Klinkert</b></sub>
+        </a>
+    </td>
 </tr>
 </table>
