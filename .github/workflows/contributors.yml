@@ -17,5 +17,8 @@ jobs:
         IMG_WIDTH: '100'
         FONT_SIZE: '14'
         PATH: '/README.md'
+        BRANCH: 'contributors/update'
+        PULL_REQUEST: 'master'
         COMMIT_MESSAGE: 'docs(README): update contributors'
         AVATAR_SHAPE: 'round'
+        IGNORED_CONTRIBUTORS: 'devin-ai-integration'
