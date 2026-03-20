@@ -5,7 +5,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint index.js",
+    "lint": "eslint index.js index.test.js",
     "prepare": "ncc build index.js -o dist --source-map",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "all": "npm run lint && npm run prepare && npm run test"
