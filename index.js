@@ -4,9 +4,10 @@ import * as exec from '@actions/exec';
 import * as cache from '@actions/cache';
 
 import { platform, arch } from 'node:process';
+import { pathToFileURL } from 'node:url';
 
-function direnvBinaryURL(version, platform, arch) {
-  const baseurl = `https://github.com/direnv/direnv/releases/download/v${version}/direnv`
+export function direnvBinaryURL(version, platform, arch) {
+  const baseurl = `https://github.com/direnv/direnv/releases/download/v${version}/direnv`;
 
   // supported arch: x64, arm64
   // supported platform: linux, darwin
@@ -38,7 +39,7 @@ function direnvBinaryURL(version, platform, arch) {
 }
 
 // internal functions
-async function installTools() {
+export async function installTools() {
   const direnvVersion = core.getInput('direnvVersion');
   core.info(`installing direnv-${direnvVersion} on ${platform}-${arch}`);
 
@@ -99,12 +100,12 @@ async function installTools() {
   }
 }
 
-async function allowEnvrc(path) {
+export async function allowEnvrc(path) {
   core.info('allowing envrc...');
   await exec.exec(`direnv`, ['allow', path]);
 }
 
-async function exportEnvrc(path) {
+export async function exportEnvrc(path) {
   let outputBuffer = '';
   const options = {};
   options.listeners = {
@@ -120,7 +121,7 @@ async function exportEnvrc(path) {
   return JSON.parse(outputBuffer);
 }
 
-async function setMasks(envs) {
+export async function setMasks(envs) {
   const rawMaskList = core.getInput('masks');
   const maskList = rawMaskList.split(',').map(function (mask) {
     return mask.trim();
@@ -135,8 +136,29 @@ async function setMasks(envs) {
   });
 }
 
+export function applyEnvVars(envs) {
+  Object.keys(envs).forEach(function (name) {
+    const value = envs[name];
+
+    if (name === 'PATH') {
+      core.info('detected PATH in .envrc, appending to PATH...');
+      core.addPath(value);
+    } else {
+      core.exportVariable(name, value);
+    }
+  });
+}
+
+export function errorMessage(error) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
+}
+
 // action entrypoint
-async function main() {
+export async function main() {
   const path = core.getInput('path');
   try {
     // install direnv
@@ -149,24 +171,17 @@ async function main() {
     const envs = await exportEnvrc(path);
 
     // set envs
-    Object.keys(envs).forEach(function (name) {
-      const value = envs[name];
-
-      if (name === 'PATH') {
-        core.info(`detected PATH in .envrc, appending to PATH...`);
-        core.addPath(value);
-      } else {
-        core.exportVariable(name, value);
-      }
-    });
+    applyEnvVars(envs);
 
     // set masks
     await setMasks(envs);
   }
   catch (error) {
-    core.setFailed(error.message);
+    core.setFailed(errorMessage(error));
   }
 }
 
 // run action
-main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
+}

@@ -41504,6 +41504,18 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"@actions/cache","version":"6.
 /************************************************************************/
 var __webpack_exports__ = {};
 
+// EXPORTS
+__nccwpck_require__.d(__webpack_exports__, {
+  y1: () => (/* binding */ allowEnvrc),
+  qe: () => (/* binding */ applyEnvVars),
+  $8: () => (/* binding */ direnvBinaryURL),
+  gJ: () => (/* binding */ errorMessage),
+  Fe: () => (/* binding */ exportEnvrc),
+  HG: () => (/* binding */ installTools),
+  iW: () => (/* binding */ main),
+  OY: () => (/* binding */ setMasks)
+});
+
 // NAMESPACE OBJECT: ./node_modules/@azure/storage-blob/dist/esm/generated/src/models/mappers.js
 var mappers_namespaceObject = {};
 __nccwpck_require__.r(mappers_namespaceObject);
@@ -89807,6 +89819,8 @@ function saveCacheV2(paths_1, key_1, options_1) {
     });
 }
 //# sourceMappingURL=cache.js.map
+// EXTERNAL MODULE: external "node:url"
+var external_node_url_ = __nccwpck_require__(3136);
 ;// CONCATENATED MODULE: ./index.js
 
 
@@ -89815,8 +89829,9 @@ function saveCacheV2(paths_1, key_1, options_1) {
 
 
 
+
 function direnvBinaryURL(version, platform, arch) {
-  const baseurl = `https://github.com/direnv/direnv/releases/download/v${version}/direnv`
+  const baseurl = `https://github.com/direnv/direnv/releases/download/v${version}/direnv`;
 
   // supported arch: x64, arm64
   // supported platform: linux, darwin
@@ -89945,6 +89960,27 @@ async function setMasks(envs) {
   });
 }
 
+function applyEnvVars(envs) {
+  Object.keys(envs).forEach(function (name) {
+    const value = envs[name];
+
+    if (name === 'PATH') {
+      info('detected PATH in .envrc, appending to PATH...');
+      addPath(value);
+    } else {
+      exportVariable(name, value);
+    }
+  });
+}
+
+function errorMessage(error) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
+}
+
 // action entrypoint
 async function main() {
   const path = getInput('path');
@@ -89959,27 +89995,29 @@ async function main() {
     const envs = await exportEnvrc(path);
 
     // set envs
-    Object.keys(envs).forEach(function (name) {
-      const value = envs[name];
-
-      if (name === 'PATH') {
-        info(`detected PATH in .envrc, appending to PATH...`);
-        addPath(value);
-      } else {
-        exportVariable(name, value);
-      }
-    });
+    applyEnvVars(envs);
 
     // set masks
     await setMasks(envs);
   }
   catch (error) {
-    setFailed(error.message);
+    setFailed(errorMessage(error));
   }
 }
 
 // run action
-main();
+if (process.argv[1] && import.meta.url === (0,external_node_url_.pathToFileURL)(process.argv[1]).href) {
+  main();
+}
 
+var __webpack_exports__allowEnvrc = __webpack_exports__.y1;
+var __webpack_exports__applyEnvVars = __webpack_exports__.qe;
+var __webpack_exports__direnvBinaryURL = __webpack_exports__.$8;
+var __webpack_exports__errorMessage = __webpack_exports__.gJ;
+var __webpack_exports__exportEnvrc = __webpack_exports__.Fe;
+var __webpack_exports__installTools = __webpack_exports__.HG;
+var __webpack_exports__main = __webpack_exports__.iW;
+var __webpack_exports__setMasks = __webpack_exports__.OY;
+export { __webpack_exports__allowEnvrc as allowEnvrc, __webpack_exports__applyEnvVars as applyEnvVars, __webpack_exports__direnvBinaryURL as direnvBinaryURL, __webpack_exports__errorMessage as errorMessage, __webpack_exports__exportEnvrc as exportEnvrc, __webpack_exports__installTools as installTools, __webpack_exports__main as main, __webpack_exports__setMasks as setMasks };
 
 //# sourceMappingURL=index.js.map

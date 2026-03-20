@@ -30,6 +30,17 @@ with:
 
 This will load `.envrc` residing at the top of the repository.
 
+## Development
+
+Run the local quality checks before packaging or releasing changes:
+
+```bash
+npm run lint
+npm test
+```
+
+The unit tests cover binary URL selection, tool installation cache branches, environment export behavior, secret masking, and the main action flow with mocked GitHub Actions APIs.
+
 ## Supported platforms and architectures
 
 After v1.0.7, the following platforms and architectures are supported.
