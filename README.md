@@ -34,8 +34,10 @@ No outputs
 
 ## Example usage
 
+Examples below pin the current release, `v1.1.2`. If you prefer the moving major tag, use `@v1`.
+
 ```yaml
-uses: HatsuneMiku3939/direnv-action@v1
+uses: HatsuneMiku3939/direnv-action@v1.1.2
 with:
   direnvVersion: 2.37.1
   masks: SECRET1, SECRET2
@@ -46,7 +48,7 @@ This loads the `.envrc` file from the repository root.
 To evaluate the `.envrc` in a subdirectory, set `path` explicitly:
 
 ```yaml
-uses: HatsuneMiku3939/direnv-action@v1
+uses: HatsuneMiku3939/direnv-action@v1.1.2
 with:
   path: child
   masks: SECRET1, SECRET2
