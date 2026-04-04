@@ -1,18 +1,18 @@
 {
-  "name": "javascript-action",
-  "version": "1.0.0",
-  "description": "JavaScript Action Template",
+  "name": "direnv-action",
+  "version": "1.1.2",
+  "description": "Provides environment variables via direnv",
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint index.js",
+    "lint": "eslint index.js index.test.js",
     "prepare": "ncc build index.js -o dist --source-map",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "all": "npm run lint && npm run prepare && npm run test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/javascript-action.git"
+    "url": "git+https://github.com/HatsuneMiku3939/direnv-action.git"
   },
   "keywords": [
     "GitHub",
@@ -22,9 +22,9 @@
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/actions/javascript-action/issues"
+    "url": "https://github.com/HatsuneMiku3939/direnv-action/issues"
   },
-  "homepage": "https://github.com/actions/javascript-action#readme",
+  "homepage": "https://github.com/HatsuneMiku3939/direnv-action#readme",
   "dependencies": {
     "@actions/cache": "^6.0.0",
     "@actions/core": "^3.0.0",
@@ -34,7 +34,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@vercel/ncc": "^0.38.3",
-    "eslint": "^10.0.3",
+    "eslint": "^10.2.0",
     "globals": "^17.4.0",
     "jest": "^30.0.0"
   }
