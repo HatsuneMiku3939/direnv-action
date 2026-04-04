@@ -34,10 +34,10 @@ No outputs
 
 ## Example usage
 
-Examples below pin the current release, `v1.1.2`. If you prefer the moving major tag, use `@v1`.
+Examples below pin the current release, `v1.1.4`. If you prefer compatible updates within the current major line, use the moving major tag `@v1`.
 
 ```yaml
-uses: HatsuneMiku3939/direnv-action@v1.1.2
+uses: HatsuneMiku3939/direnv-action@v1.1.4
 with:
   direnvVersion: 2.37.1
   masks: SECRET1, SECRET2
@@ -48,11 +48,13 @@ This loads the `.envrc` file from the repository root.
 To evaluate the `.envrc` in a subdirectory, set `path` explicitly:
 
 ```yaml
-uses: HatsuneMiku3939/direnv-action@v1.1.2
+uses: HatsuneMiku3939/direnv-action@v1.1.4
 with:
   path: child
   masks: SECRET1, SECRET2
 ```
+
+For the most predictable builds, pin an exact version tag such as `@v1.1.4`. Use `@v1` only when you want to receive the latest compatible `v1.x.y` release automatically.
 
 ## Behavior notes
 
@@ -77,6 +79,12 @@ Run the local quality checks before packaging or releasing changes:
 ```bash
 npm run lint
 npm test
+```
+
+For release preparation, use the full gate so the generated `dist/` artifacts stay in sync:
+
+```bash
+npm run all
 ```
 
 The unit tests cover binary URL selection, tool installation cache branches, environment export behavior, secret masking, and the main action flow with mocked GitHub Actions APIs.

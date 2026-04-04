@@ -1,8 +1,10 @@
 name: "check-dirty"
 on:
   pull_request:
+  push:
     branches:
-      - v1
+      - master
+      - main
 
 jobs:
   check-dirty:
