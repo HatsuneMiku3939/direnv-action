@@ -1,6 +1,6 @@
 {
   "name": "direnv-action",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Provides environment variables via direnv",
   "type": "module",
   "main": "index.js",
