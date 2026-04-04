@@ -5,15 +5,28 @@
 
 # direnv action
 
-> Privides environment variables via direnv
+> Provides environment variables via direnv
 
 This action provides environment variables via [direnv](https://direnv.net/),
+evaluates the target `.envrc`, and exports the resulting environment variables
+to subsequent workflow steps.
+
+## How it works
+
+The action performs the following steps:
+
+1. Installs the requested `direnv` version from the GitHub release assets or a cache.
+2. Runs `direnv allow` for the configured `path`.
+3. Runs `direnv export json` in the configured `path`.
+4. Exports the resulting variables to the GitHub Actions environment.
+5. Appends `PATH` entries through `core.addPath()` when `PATH` is present in the exported values.
+6. Masks configured secret values with the GitHub Actions masking API.
 
 ## Inputs
 
-- `direnvVersion`: The version of direnv to use. Default: `2.32.1`
-- `masks`: Comma seprated list of environment variables to mask. Default: `''`
-- `path`: The directory for direnv to use. Default: `.`
+- `direnvVersion`: The `direnv` version to use. Default: `2.37.1`.
+- `masks`: A comma-separated list of environment variable names to mask. Default: `''`.
+- `path`: The directory where `direnv allow` and `direnv export json` are executed. Default: `.`.
 
 ## Outputs
 
@@ -21,18 +34,56 @@ No outputs
 
 ## Example usage
 
+Examples below pin the current release, `v1.1.2`. If you prefer the moving major tag, use `@v1`.
+
 ```yaml
-uses: HatsuneMiku3939/direnv-action@v1
+uses: HatsuneMiku3939/direnv-action@v1.1.2
 with:
-  direnvVersion: 2.32.1
+  direnvVersion: 2.37.1
   masks: SECRET1, SECRET2
 ```
 
-This will load `.envrc` residing at the top of the repository.
+This loads the `.envrc` file from the repository root.
+
+To evaluate the `.envrc` in a subdirectory, set `path` explicitly:
+
+```yaml
+uses: HatsuneMiku3939/direnv-action@v1.1.2
+with:
+  path: child
+  masks: SECRET1, SECRET2
+```
+
+## Behavior notes
+
+- `masks` accepts environment variable names, not raw secret values.
+- When `.envrc` exports `PATH`, the action appends it to the job `PATH` instead of overwriting the entire value.
+- Variables exported by `direnv export json` are available to later workflow steps in the same job.
+- The action does not define custom outputs; consumers should read exported environment variables directly.
+
+## Security considerations
+
+This action evaluates `.envrc`, which means repository code can influence the shell commands executed by `direnv`.
+
+- Only use this action with trusted repositories and trusted `.envrc` contents.
+- Review fork-based pull request workflows carefully before allowing this action to run with secrets.
+- Treat masking as a log redaction aid, not a complete secret protection boundary.
+- Keep sensitive logic inside trusted workflow contexts whenever possible.
+
+## Development
+
+Run the local quality checks before packaging or releasing changes:
+
+```bash
+npm run lint
+npm test
+```
+
+The unit tests cover binary URL selection, tool installation cache branches, environment export behavior, secret masking, and the main action flow with mocked GitHub Actions APIs.
 
 ## Supported platforms and architectures
 
-After v1.0.7, the following platforms and architectures are supported.
+Since v1.0.7, the following platform and architecture combinations are supported.
 
 | Platform | Architecture |
 |----------|--------------|
@@ -41,7 +92,7 @@ After v1.0.7, the following platforms and architectures are supported.
 | Darwin   | x86_64       |
 | Darwin   | arm64        |
 
-version below v1.0.7, only `linux-x86_64` is supported.
+Versions earlier than v1.0.7 support only `linux-x86_64`.
 
 ## Contributors
 
