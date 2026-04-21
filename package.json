@@ -27,7 +27,7 @@
   "homepage": "https://github.com/HatsuneMiku3939/direnv-action#readme",
   "dependencies": {
     "@actions/cache": "^6.0.0",
-    "@actions/core": "^3.0.0",
+    "@actions/core": "^3.0.1",
     "@actions/exec": "^3.0.0",
     "@actions/tool-cache": "^4.0.0"
   },
