@@ -41511,6 +41511,7 @@ __nccwpck_require__.d(__webpack_exports__, {
   gJ: () => (/* binding */ errorMessage),
   Fe: () => (/* binding */ exportEnvrc),
   HG: () => (/* binding */ installTools),
+  nc: () => (/* binding */ logExportedEnvVars),
   iW: () => (/* binding */ main),
   OY: () => (/* binding */ setMasks)
 });
@@ -89959,6 +89960,17 @@ async function setMasks(envs) {
   });
 }
 
+function logExportedEnvVars(envs) {
+  const names = Object.keys(envs).sort();
+
+  if (names.length === 0) {
+    info('no environment variables exported from .envrc');
+    return;
+  }
+
+  info(`exported environment variables: ${names.join(', ')}`);
+}
+
 function applyEnvVars(envs) {
   Object.keys(envs).forEach(function (name) {
     const value = envs[name];
@@ -89993,6 +90005,9 @@ async function main() {
     // export envrc to json
     const envs = await exportEnvrc(path);
 
+    // log exported variable names without printing values
+    logExportedEnvVars(envs);
+
     // set envs
     applyEnvVars(envs);
 
@@ -90015,8 +90030,9 @@ var __webpack_exports__direnvBinaryURL = __webpack_exports__.$8;
 var __webpack_exports__errorMessage = __webpack_exports__.gJ;
 var __webpack_exports__exportEnvrc = __webpack_exports__.Fe;
 var __webpack_exports__installTools = __webpack_exports__.HG;
+var __webpack_exports__logExportedEnvVars = __webpack_exports__.nc;
 var __webpack_exports__main = __webpack_exports__.iW;
 var __webpack_exports__setMasks = __webpack_exports__.OY;
-export { __webpack_exports__allowEnvrc as allowEnvrc, __webpack_exports__applyEnvVars as applyEnvVars, __webpack_exports__direnvBinaryURL as direnvBinaryURL, __webpack_exports__errorMessage as errorMessage, __webpack_exports__exportEnvrc as exportEnvrc, __webpack_exports__installTools as installTools, __webpack_exports__main as main, __webpack_exports__setMasks as setMasks };
+export { __webpack_exports__allowEnvrc as allowEnvrc, __webpack_exports__applyEnvVars as applyEnvVars, __webpack_exports__direnvBinaryURL as direnvBinaryURL, __webpack_exports__errorMessage as errorMessage, __webpack_exports__exportEnvrc as exportEnvrc, __webpack_exports__installTools as installTools, __webpack_exports__logExportedEnvVars as logExportedEnvVars, __webpack_exports__main as main, __webpack_exports__setMasks as setMasks };
 
 //# sourceMappingURL=index.js.map

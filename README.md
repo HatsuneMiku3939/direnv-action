@@ -21,6 +21,7 @@ The action performs the following steps:
 4. Exports the resulting variables to the GitHub Actions environment.
 5. Appends `PATH` entries through `core.addPath()` when `PATH` is present in the exported values.
 6. Masks configured secret values with the GitHub Actions masking API.
+7. Logs the exported environment variable names without printing their values.
 
 ## Inputs
 
@@ -61,6 +62,7 @@ For the most predictable builds, pin an exact version tag such as `@v1.1.8`. Use
 - `masks` accepts environment variable names, not raw secret values.
 - When `.envrc` exports `PATH`, the action appends it to the job `PATH` instead of overwriting the entire value.
 - Variables exported by `direnv export json` are available to later workflow steps in the same job.
+- The action logs exported variable names for debugging, but it does not print environment variable values.
 - The action does not define custom outputs; consumers should read exported environment variables directly.
 
 ## Security considerations

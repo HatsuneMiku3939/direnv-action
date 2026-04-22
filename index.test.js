@@ -42,6 +42,7 @@ const {
   direnvBinaryURL,
   errorMessage,
   installTools,
+  logExportedEnvVars,
   main,
   setMasks,
 } = await import('./index.js');
@@ -92,6 +93,24 @@ describe('applyEnvVars', () => {
     expect(exportVariable).toHaveBeenCalledWith('BAR', 'baz');
     expect(addPath).toHaveBeenCalledWith('/tmp/bin');
     expect(info).toHaveBeenCalledWith('detected PATH in .envrc, appending to PATH...');
+  });
+});
+
+describe('logExportedEnvVars', () => {
+  test('logs exported variable names in sorted order', () => {
+    logExportedEnvVars({
+      SECRET1: 'super-secret',
+      PATH: '/tmp/bin',
+      CHILD_ENV: 'defined',
+    });
+
+    expect(info).toHaveBeenCalledWith('exported environment variables: CHILD_ENV, PATH, SECRET1');
+  });
+
+  test('logs when direnv exports no variables', () => {
+    logExportedEnvVars({});
+
+    expect(info).toHaveBeenCalledWith('no environment variables exported from .envrc');
   });
 });
 
@@ -208,6 +227,7 @@ describe('main', () => {
         stdout: expect.any(Function),
       }),
     }));
+    expect(info).toHaveBeenCalledWith('exported environment variables: CHILD_ENV, PATH, SECRET1');
     expect(addPath).toHaveBeenCalledWith('/tool-cache/direnv');
     expect(addPath).toHaveBeenCalledWith('/workspace/bin');
     expect(exportVariable).toHaveBeenCalledWith('SECRET1', 'super-secret');

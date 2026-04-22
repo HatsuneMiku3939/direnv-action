@@ -136,6 +136,17 @@ export async function setMasks(envs) {
   });
 }
 
+export function logExportedEnvVars(envs) {
+  const names = Object.keys(envs).sort();
+
+  if (names.length === 0) {
+    core.info('no environment variables exported from .envrc');
+    return;
+  }
+
+  core.info(`exported environment variables: ${names.join(', ')}`);
+}
+
 export function applyEnvVars(envs) {
   Object.keys(envs).forEach(function (name) {
     const value = envs[name];
@@ -169,6 +180,9 @@ export async function main() {
 
     // export envrc to json
     const envs = await exportEnvrc(path);
+
+    // log exported variable names without printing values
+    logExportedEnvVars(envs);
 
     // set envs
     applyEnvVars(envs);
