@@ -4,6 +4,9 @@ This repository contains a JavaScript-based GitHub Action that installs `direnv`
 ## Project Map
 ```text
 .
+├── .agents/skills/direnv-action-release/
+│   ├── SKILL.md              # Repo-specific release workflow for version/tag publishing
+│   └── references/           # Short release checklist and guardrails
 ├── action.yml                 # GitHub Action metadata, inputs, runtime entrypoint
 ├── index.js                   # Action implementation and exported helpers
 ├── index.test.js              # Jest unit tests with mocked @actions modules
@@ -40,6 +43,7 @@ This repository contains a JavaScript-based GitHub Action that installs `direnv`
 - Always run `npm run lint` and `npm test` before proposing changes; run `npm run all` for release-affecting updates.
 - If source behavior changes, update tests in `index.test.js` and relevant documentation (`README.md`, runbooks) in the same change.
 - Keep `action.yml` entrypoint aligned with bundled output (`dist/index.js`) after build-related edits.
+- For release work, prefer the repo skill at `.agents/skills/direnv-action-release/` and keep its references aligned with `RELEASE_RUNBOOK.md`.
 - Do not introduce unsupported platform/arch mappings without matching implementation and tests.
 - > TODO: Confirm branch protection, PR label policy, and required CI checks from repository settings.
 - You can push directly to `master` while in release process, but ensure all tests pass and the release runbook is followed for version bumps and changelog updates. For non-release changes, use feature branches and PRs with appropriate reviews.
