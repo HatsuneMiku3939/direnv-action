@@ -43,8 +43,6 @@ jobs:
     - run: npm ci
     - run: npm run prepare
     - uses: ./
-      with:
-        required: DIRENV_ACTION_TEST
     - run: printenv | grep DIRENV_ACTION_TEST
     - run: echo $PATH | grep $(pwd)/bin
     - run: printenv
