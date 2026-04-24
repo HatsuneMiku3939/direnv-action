@@ -41513,7 +41513,9 @@ __nccwpck_require__.d(__webpack_exports__, {
   HG: () => (/* binding */ installTools),
   nc: () => (/* binding */ logExportedEnvVars),
   iW: () => (/* binding */ main),
-  OY: () => (/* binding */ setMasks)
+  lR: () => (/* binding */ parseRequiredEnvVarNames),
+  OY: () => (/* binding */ setMasks),
+  r0: () => (/* binding */ validateRequiredEnvVars)
 });
 
 // NAMESPACE OBJECT: ./node_modules/@azure/storage-blob/dist/esm/generated/src/models/mappers.js
@@ -91870,6 +91872,8 @@ var external_node_url_ = __nccwpck_require__(3136);
 
 
 
+const ENV_VAR_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
 function direnvBinaryURL(version, platform, arch) {
   const baseurl = `https://github.com/direnv/direnv/releases/download/v${version}/direnv`;
 
@@ -92011,6 +92015,28 @@ function logExportedEnvVars(envs) {
   info(`exported environment variables: ${names.join(', ')}`);
 }
 
+function parseRequiredEnvVarNames(rawRequiredList) {
+  const requiredNames = rawRequiredList
+    .split(/\r?\n/)
+    .map((name) => name.trim())
+    .filter((name) => name.length > 0);
+  const invalidNames = requiredNames.filter((name) => !ENV_VAR_NAME_PATTERN.test(name));
+
+  if (invalidNames.length > 0) {
+    throw new Error(`Invalid required environment variable names: ${invalidNames.join(', ')}`);
+  }
+
+  return [...new Set(requiredNames)];
+}
+
+function validateRequiredEnvVars(envs, requiredNames) {
+  const missingNames = requiredNames.filter((name) => !Object.prototype.hasOwnProperty.call(envs, name));
+
+  if (missingNames.length > 0) {
+    throw new Error(`Missing required environment variables: ${missingNames.join(', ')}`);
+  }
+}
+
 function applyEnvVars(envs) {
   Object.keys(envs).forEach(function (name) {
     const value = envs[name];
@@ -92048,6 +92074,10 @@ async function main() {
     // log exported variable names without printing values
     logExportedEnvVars(envs);
 
+    // fail early when required exported variables are missing
+    const requiredNames = parseRequiredEnvVarNames(getInput('required'));
+    validateRequiredEnvVars(envs, requiredNames);
+
     // set envs
     applyEnvVars(envs);
 
@@ -92072,7 +92102,9 @@ var __webpack_exports__exportEnvrc = __webpack_exports__.Fe;
 var __webpack_exports__installTools = __webpack_exports__.HG;
 var __webpack_exports__logExportedEnvVars = __webpack_exports__.nc;
 var __webpack_exports__main = __webpack_exports__.iW;
+var __webpack_exports__parseRequiredEnvVarNames = __webpack_exports__.lR;
 var __webpack_exports__setMasks = __webpack_exports__.OY;
-export { __webpack_exports__allowEnvrc as allowEnvrc, __webpack_exports__applyEnvVars as applyEnvVars, __webpack_exports__direnvBinaryURL as direnvBinaryURL, __webpack_exports__errorMessage as errorMessage, __webpack_exports__exportEnvrc as exportEnvrc, __webpack_exports__installTools as installTools, __webpack_exports__logExportedEnvVars as logExportedEnvVars, __webpack_exports__main as main, __webpack_exports__setMasks as setMasks };
+var __webpack_exports__validateRequiredEnvVars = __webpack_exports__.r0;
+export { __webpack_exports__allowEnvrc as allowEnvrc, __webpack_exports__applyEnvVars as applyEnvVars, __webpack_exports__direnvBinaryURL as direnvBinaryURL, __webpack_exports__errorMessage as errorMessage, __webpack_exports__exportEnvrc as exportEnvrc, __webpack_exports__installTools as installTools, __webpack_exports__logExportedEnvVars as logExportedEnvVars, __webpack_exports__main as main, __webpack_exports__parseRequiredEnvVarNames as parseRequiredEnvVarNames, __webpack_exports__setMasks as setMasks, __webpack_exports__validateRequiredEnvVars as validateRequiredEnvVars };
 
 //# sourceMappingURL=index.js.map

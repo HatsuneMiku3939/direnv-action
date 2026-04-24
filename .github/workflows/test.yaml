@@ -23,6 +23,9 @@ jobs:
     - uses: ./
       with:
         masks: SECRET1, SECRET2
+        required: |
+          DIRENV_ACTION_TEST
+          CHILD_ENV
         direnvVersion: 2.32.3
         path: child
     - run: printenv | grep DIRENV_ACTION_TEST
@@ -40,6 +43,24 @@ jobs:
     - run: npm ci
     - run: npm run prepare
     - uses: ./
+      with:
+        required: DIRENV_ACTION_TEST
     - run: printenv | grep DIRENV_ACTION_TEST
     - run: echo $PATH | grep $(pwd)/bin
     - run: printenv
+
+  test-required-missing:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+    - run: npm ci
+    - run: npm run prepare
+    - id: missing_required
+      uses: ./
+      continue-on-error: true
+      with:
+        required: MISSING_REQUIRED_ENV
+    - run: test "${{ steps.missing_required.outcome }}" = "failure"

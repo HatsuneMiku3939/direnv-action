@@ -8,6 +8,10 @@ inputs:
     description: 'Comma-separated list of environment variable names to mask'
     required: true
     default: ''
+  required:
+    description: 'Newline-delimited list of environment variable names that must be exported'
+    required: false
+    default: ''
   direnvVersion:
     description: 'direnv version to use'
     required: true

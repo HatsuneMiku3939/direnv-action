@@ -44,7 +44,9 @@ const {
   installTools,
   logExportedEnvVars,
   main,
+  parseRequiredEnvVarNames,
   setMasks,
+  validateRequiredEnvVars,
 } = await import('./index.js');
 
 beforeEach(() => {
@@ -128,6 +130,41 @@ describe('setMasks', () => {
   });
 });
 
+describe('parseRequiredEnvVarNames', () => {
+  test.each([
+    ['', []],
+    ['\n\n', []],
+    ['AWS_REGION\nDATABASE_URL\nNODE_AUTH_TOKEN', ['AWS_REGION', 'DATABASE_URL', 'NODE_AUTH_TOKEN']],
+    [' AWS_REGION \r\n DATABASE_URL \nAWS_REGION', ['AWS_REGION', 'DATABASE_URL']],
+  ])('parses required input %p', (rawRequiredList, expectedNames) => {
+    expect(parseRequiredEnvVarNames(rawRequiredList)).toEqual(expectedNames);
+  });
+
+  test.each([
+    ['1INVALID', 'Invalid required environment variable names: 1INVALID'],
+    ['VALID\nINVALID-NAME\nALSO.INVALID', 'Invalid required environment variable names: INVALID-NAME, ALSO.INVALID'],
+  ])('rejects malformed required input %p', (rawRequiredList, expectedMessage) => {
+    expect(() => parseRequiredEnvVarNames(rawRequiredList)).toThrow(expectedMessage);
+  });
+});
+
+describe('validateRequiredEnvVars', () => {
+  test('succeeds when all required names are present', () => {
+    expect(() => validateRequiredEnvVars({
+      AWS_REGION: 'ap-northeast-1',
+      DATABASE_URL: '',
+      NODE_AUTH_TOKEN: 'secret',
+    }, ['AWS_REGION', 'DATABASE_URL'])).not.toThrow();
+  });
+
+  test.each([
+    [['DATABASE_URL'], 'Missing required environment variables: DATABASE_URL'],
+    [['DATABASE_URL', 'NODE_AUTH_TOKEN'], 'Missing required environment variables: DATABASE_URL, NODE_AUTH_TOKEN'],
+  ])('fails when required names are missing: %p', (requiredNames, expectedMessage) => {
+    expect(() => validateRequiredEnvVars({ AWS_REGION: 'ap-northeast-1' }, requiredNames)).toThrow(expectedMessage);
+  });
+});
+
 describe('installTools', () => {
   test('uses the GitHub tool-cache when direnv is already present', async () => {
     getInput.mockImplementation((name) => (name === 'direnvVersion' ? '2.37.1' : ''));
@@ -199,6 +236,8 @@ describe('main', () => {
           return '2.37.1';
         case 'masks':
           return 'SECRET1';
+        case 'required':
+          return 'CHILD_ENV\nSECRET1';
         default:
           return '';
       }
@@ -234,6 +273,38 @@ describe('main', () => {
     expect(exportVariable).toHaveBeenCalledWith('CHILD_ENV', 'defined');
     expect(setSecret).toHaveBeenCalledWith('super-secret');
     expect(setFailed).not.toHaveBeenCalled();
+  });
+
+  test('fails before applying env vars when required names are missing', async () => {
+    getInput.mockImplementation((name) => {
+      switch (name) {
+        case 'path':
+          return 'child';
+        case 'direnvVersion':
+          return '2.37.1';
+        case 'required':
+          return 'DATABASE_URL\nNODE_AUTH_TOKEN';
+        default:
+          return '';
+      }
+    });
+
+    find.mockReturnValue('/tool-cache/direnv');
+    exec.mockImplementation(async (command, args, options = {}) => {
+      if (command === 'direnv' && args[0] === 'export' && options.listeners?.stdout) {
+        options.listeners.stdout(Buffer.from(JSON.stringify({
+          AWS_REGION: 'ap-northeast-1',
+        })));
+      }
+
+      return 0;
+    });
+
+    await main();
+
+    expect(setFailed).toHaveBeenCalledWith('Missing required environment variables: DATABASE_URL, NODE_AUTH_TOKEN');
+    expect(exportVariable).not.toHaveBeenCalled();
+    expect(setSecret).not.toHaveBeenCalled();
   });
 
   test('fails the action with a normalized message when execution throws', async () => {

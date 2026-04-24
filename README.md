@@ -22,11 +22,13 @@ The action performs the following steps:
 5. Appends `PATH` entries through `core.addPath()` when `PATH` is present in the exported values.
 6. Masks configured secret values with the GitHub Actions masking API.
 7. Logs the exported environment variable names without printing their values.
+8. Optionally verifies that required environment variable names were exported.
 
 ## Inputs
 
 - `direnvVersion`: The `direnv` version to use. Default: `2.37.1`.
 - `masks`: A comma-separated list of environment variable names to mask. Default: `''`.
+- `required`: A newline-delimited list of environment variable names that must be exported. Default: `''`.
 - `path`: The directory where `direnv allow` and `direnv export json` are executed. Default: `.`.
 
 ## Outputs
@@ -55,11 +57,23 @@ with:
   masks: SECRET1, SECRET2
 ```
 
+To fail early when expected variables are not exported, set `required`:
+
+```yaml
+uses: HatsuneMiku3939/direnv-action@v1.2.1
+with:
+  required: |
+    AWS_REGION
+    DATABASE_URL
+    NODE_AUTH_TOKEN
+```
+
 For the most predictable builds, pin an exact version tag such as `@v1.2.1`. Use `@v1` only when you want to receive the latest compatible `v1.x.y` release automatically.
 
 ## Behavior notes
 
 - `masks` accepts environment variable names, not raw secret values.
+- `required` accepts environment variable names, not raw values, and fails when any listed name is absent from the exported environment.
 - When `.envrc` exports `PATH`, the action appends it to the job `PATH` instead of overwriting the entire value.
 - Variables exported by `direnv export json` are available to later workflow steps in the same job.
 - The action logs exported variable names for debugging, but it does not print environment variable values.
@@ -89,7 +103,7 @@ For release preparation, use the full gate so the generated `dist/` artifacts st
 npm run all
 ```
 
-The unit tests cover binary URL selection, tool installation cache branches, environment export behavior, secret masking, and the main action flow with mocked GitHub Actions APIs.
+The unit tests cover binary URL selection, tool installation cache branches, environment export behavior, required variable validation, secret masking, and the main action flow with mocked GitHub Actions APIs.
 
 ## Supported platforms and architectures
 
