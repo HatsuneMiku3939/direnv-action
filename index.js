@@ -6,6 +6,8 @@ import * as cache from '@actions/cache';
 import { platform, arch } from 'node:process';
 import { pathToFileURL } from 'node:url';
 
+const ENV_VAR_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
 export function direnvBinaryURL(version, platform, arch) {
   const baseurl = `https://github.com/direnv/direnv/releases/download/v${version}/direnv`;
 
@@ -147,6 +149,28 @@ export function logExportedEnvVars(envs) {
   core.info(`exported environment variables: ${names.join(', ')}`);
 }
 
+export function parseRequiredEnvVarNames(rawRequiredList) {
+  const requiredNames = rawRequiredList
+    .split(/\r?\n/)
+    .map((name) => name.trim())
+    .filter((name) => name.length > 0);
+  const invalidNames = requiredNames.filter((name) => !ENV_VAR_NAME_PATTERN.test(name));
+
+  if (invalidNames.length > 0) {
+    throw new Error(`Invalid required environment variable names: ${invalidNames.join(', ')}`);
+  }
+
+  return [...new Set(requiredNames)];
+}
+
+export function validateRequiredEnvVars(envs, requiredNames) {
+  const missingNames = requiredNames.filter((name) => !Object.prototype.hasOwnProperty.call(envs, name));
+
+  if (missingNames.length > 0) {
+    throw new Error(`Missing required environment variables: ${missingNames.join(', ')}`);
+  }
+}
+
 export function applyEnvVars(envs) {
   Object.keys(envs).forEach(function (name) {
     const value = envs[name];
@@ -183,6 +207,10 @@ export async function main() {
 
     // log exported variable names without printing values
     logExportedEnvVars(envs);
+
+    // fail early when required exported variables are missing
+    const requiredNames = parseRequiredEnvVarNames(core.getInput('required'));
+    validateRequiredEnvVars(envs, requiredNames);
 
     // set envs
     applyEnvVars(envs);
