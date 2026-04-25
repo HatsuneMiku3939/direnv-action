@@ -18,11 +18,11 @@ The action performs the following steps:
 1. Installs the requested `direnv` version from the GitHub release assets or a cache.
 2. Runs `direnv allow` for the configured `path`.
 3. Runs `direnv export json` in the configured `path`.
-4. Exports the resulting variables to the GitHub Actions environment.
-5. Appends `PATH` entries through `core.addPath()` when `PATH` is present in the exported values.
-6. Masks configured secret values with the GitHub Actions masking API.
-7. Logs the exported environment variable names without printing their values.
-8. Optionally verifies that required environment variable names were exported.
+4. Logs the exported environment variable names without printing their values.
+5. Optionally verifies that required environment variable names were exported.
+6. Exports the resulting variables to the GitHub Actions environment.
+7. Appends `PATH` entries through `core.addPath()` when `PATH` is present in the exported values.
+8. Masks configured secret values with the GitHub Actions masking API.
 
 ## Inputs
 
