@@ -7,6 +7,17 @@ updates:
     # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "daily"
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+    cooldown:
+      default-days: 7
+      include:
+        - "@eslint/js"
+        - "@vercel/ncc"
+        - "eslint"
+        - "globals"
+        - "jest"
 
   # Enable version updates for actions
   - package-ecosystem: github-actions
