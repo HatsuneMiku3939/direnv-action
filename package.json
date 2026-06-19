@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "eslint index.js index.test.js",
     "prepare": "ncc build index.js -o dist --source-map",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest",
+    "test": "vitest run",
     "all": "npm run lint && npm run prepare && npm run test"
   },
   "repository": {
@@ -36,6 +36,6 @@
     "@vercel/ncc": "^0.44.0",
     "eslint": "^10.4.1",
     "globals": "^17.6.0",
-    "jest": "^30.4.2"
+    "vitest": "^4.1.9"
   }
 }

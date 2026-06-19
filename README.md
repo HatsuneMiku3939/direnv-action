@@ -103,7 +103,7 @@ For release preparation, use the full gate so the generated `dist/` artifacts st
 npm run all
 ```
 
-The unit tests cover binary URL selection, tool installation cache branches, environment export behavior, required variable validation, secret masking, and the main action flow with mocked GitHub Actions APIs.
+The Vitest unit tests cover binary URL selection, tool installation cache branches, environment export behavior, required variable validation, secret masking, and the main action flow with mocked GitHub Actions APIs.
 
 ## Supported platforms and architectures
 

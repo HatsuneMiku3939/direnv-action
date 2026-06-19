@@ -1,19 +1,36 @@
-import { jest } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-const getInput = jest.fn();
-const info = jest.fn();
-const addPath = jest.fn();
-const exportVariable = jest.fn();
-const setSecret = jest.fn();
-const setFailed = jest.fn();
-const find = jest.fn();
-const cacheFile = jest.fn();
-const downloadTool = jest.fn();
-const exec = jest.fn();
-const restoreCache = jest.fn();
-const saveCache = jest.fn();
+const mocks = vi.hoisted(() => ({
+  getInput: vi.fn(),
+  info: vi.fn(),
+  addPath: vi.fn(),
+  exportVariable: vi.fn(),
+  setSecret: vi.fn(),
+  setFailed: vi.fn(),
+  find: vi.fn(),
+  cacheFile: vi.fn(),
+  downloadTool: vi.fn(),
+  exec: vi.fn(),
+  restoreCache: vi.fn(),
+  saveCache: vi.fn(),
+}));
 
-jest.unstable_mockModule('@actions/core', () => ({
+const {
+  getInput,
+  info,
+  addPath,
+  exportVariable,
+  setSecret,
+  setFailed,
+  find,
+  cacheFile,
+  downloadTool,
+  exec,
+  restoreCache,
+  saveCache,
+} = mocks;
+
+vi.mock('@actions/core', () => ({
   getInput,
   info,
   addPath,
@@ -22,17 +39,17 @@ jest.unstable_mockModule('@actions/core', () => ({
   setFailed,
 }));
 
-jest.unstable_mockModule('@actions/tool-cache', () => ({
+vi.mock('@actions/tool-cache', () => ({
   find,
   cacheFile,
   downloadTool,
 }));
 
-jest.unstable_mockModule('@actions/exec', () => ({
+vi.mock('@actions/exec', () => ({
   exec,
 }));
 
-jest.unstable_mockModule('@actions/cache', () => ({
+vi.mock('@actions/cache', () => ({
   restoreCache,
   saveCache,
 }));
@@ -50,7 +67,7 @@ const {
 } = await import('./index.js');
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
   getInput.mockImplementation(() => '');
   find.mockReturnValue('');
   cacheFile.mockResolvedValue('/tool-cache/direnv');
