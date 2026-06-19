@@ -19,7 +19,7 @@ Use this skill when the user asks to release `direnv-action`, bump the release v
 1. Confirm the working tree is clean and `master` is up to date.
 2. Determine the next version from the requested release type and the latest `v*` tag.
 3. Update the version with `npm version <version> --no-git-tag-version`.
-4. Update release-facing documentation that pins an exact version tag.
+4. Update release-facing documentation that pins an exact version tag, including both `README.md` and `docs/index.html`.
 5. Run the full validation gate with `nvm use`, `npm ci`, and `npm run all`.
 6. Commit the release-preparation changes to `master` with a Conventional Commit message.
 7. Push `master`, create the annotated version tag, and publish the GitHub Release.

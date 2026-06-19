@@ -100,11 +100,12 @@ Expected result:
 
    Example:
    - Update `README.md` examples from the previous version tag to `<next-version-tag>` when the pinned release snippets change.
+   - Update `docs/index.html` examples from the previous version tag to `<next-version-tag>` when the Pages documentation pins the release tag.
 
 9. Commit generated changes (typically `package.json`, `package-lock.json`, `dist/`, and any release-related documentation updates) if needed:
 
    ```bash
-   git add package.json package-lock.json dist README.md
+   git add package.json package-lock.json dist README.md docs/index.html
    git commit -m "chore(release): prepare <next-version-tag>"
    ```
 
@@ -178,7 +179,7 @@ Expected result:
 
 - [ ] `master` updated with `npm run all` success.
 - [ ] Release version determined and applied if needed.
-- [ ] Documentation updated for the latest pinned release version where applicable.
+- [ ] `README.md` and `docs/index.html` updated for the latest pinned release version where applicable.
 - [ ] Generated `dist` and version files committed and pushed to `master`.
 - [ ] New version tag created from `master`.
 - [ ] Version tag pushed to remote.
@@ -189,6 +190,7 @@ Expected result:
 
 - Do not create the release tag from an outdated local checkout.
 - Do not skip the second `npm run all` after `npm version`; the generated artifacts and lockfile must match the release version.
+- Do not update only one release-facing document when both `README.md` and `docs/index.html` pin the latest exact release tag.
 - Do not recreate the old `v1` branch after migration; `v1` should remain a tag only.
 - Force-updating `v1` changes what `@v1` resolves to, so confirm the target commit before pushing.
 - If the repository enables immutable release or tag policies, verify that moving `v1` is still allowed before starting the release.

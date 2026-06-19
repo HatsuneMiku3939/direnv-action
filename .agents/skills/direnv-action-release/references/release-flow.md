@@ -16,10 +16,10 @@ Use this checklist after reading `RELEASE_RUNBOOK.md`.
    - `git log <last-release-tag>..HEAD --oneline`
 4. Apply the next version:
    - `npm version <next-version> --no-git-tag-version`
-5. Update docs that pin the release tag, then rerun:
+5. Update docs that pin the release tag, including `README.md` and `docs/index.html`, then rerun:
    - `npm run all`
 6. Commit and publish:
-   - `git add package.json package-lock.json README.md dist`
+   - `git add package.json package-lock.json README.md docs/index.html dist`
    - `git commit -m "chore(release): prepare <next-version-tag>"`
    - `git push origin master`
 7. Tag and release:
