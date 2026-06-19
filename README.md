@@ -11,6 +11,8 @@ This action provides environment variables via [direnv](https://direnv.net/),
 evaluates the target `.envrc`, and exports the resulting environment variables
 to subsequent workflow steps.
 
+Documentation site: https://hatsunemiku3939.github.io/direnv-action/
+
 ## How it works
 
 The action performs the following steps:

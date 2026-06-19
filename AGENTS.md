@@ -11,6 +11,7 @@ This repository contains a JavaScript-based GitHub Action that installs `direnv`
 ├── index.js                   # Action implementation and exported helpers
 ├── index.test.js              # Vitest unit tests with mocked @actions modules
 ├── dist/                      # Bundled artifact consumed by GitHub Actions runtime
+├── docs/                      # Lightweight GitHub Pages documentation site
 ├── package.json               # npm scripts and dependency definitions
 ├── eslint.config.js           # ESLint flat config
 ├── README.md                  # Usage, behavior, security, and development notes
