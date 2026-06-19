@@ -17,7 +17,7 @@ updates:
         - "@vercel/ncc"
         - "eslint"
         - "globals"
-        - "jest"
+        - "vitest"
 
   # Enable version updates for actions
   - package-ecosystem: github-actions

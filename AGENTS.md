@@ -9,7 +9,7 @@ This repository contains a JavaScript-based GitHub Action that installs `direnv`
 │   └── references/           # Short release checklist and guardrails
 ├── action.yml                 # GitHub Action metadata, inputs, runtime entrypoint
 ├── index.js                   # Action implementation and exported helpers
-├── index.test.js              # Jest unit tests with mocked @actions modules
+├── index.test.js              # Vitest unit tests with mocked @actions modules
 ├── dist/                      # Bundled artifact consumed by GitHub Actions runtime
 ├── package.json               # npm scripts and dependency definitions
 ├── eslint.config.js           # ESLint flat config
@@ -22,7 +22,7 @@ This repository contains a JavaScript-based GitHub Action that installs `direnv`
 - Binary resolution is explicit by `platform/arch` through `direnvBinaryURL`, with hard failures for unsupported targets.
 - Installation prefers GitHub tool-cache, then actions/cache restore, then direct download, and finally rehydrates both caches.
 - `PATH` from exported env is appended via `core.addPath`; all other keys are exported via `core.exportVariable`.
-- Tests are unit-focused and rely on `jest.unstable_mockModule` to isolate GitHub Actions SDK and command execution side effects.
+- Tests are unit-focused and rely on Vitest module mocks to isolate GitHub Actions SDK and command execution side effects.
 
 ## Development Commands
 - Install dependencies: `npm ci`
@@ -32,7 +32,7 @@ This repository contains a JavaScript-based GitHub Action that installs `direnv`
 - Full local gate (lint + build + tests): `npm run all`
 
 ## Coding Conventions
-- Tech stack: Node.js ESM modules, GitHub Actions toolkit packages, Jest, ESLint.
+- Tech stack: Node.js ESM modules, GitHub Actions toolkit packages, Vitest, ESLint.
 - Keep functions small and composable; prefer pure helpers for branchable logic (e.g., URL/build decisions).
 - Preserve explicit error messages for unsupported platforms/architectures and propagate normalized failure text via `core.setFailed`.
 - Keep test cases table-driven where practical (`test.each`) and mock external side effects.
