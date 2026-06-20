@@ -39,10 +39,10 @@ No outputs
 
 ## Example usage
 
-Examples below pin the current release, `v1.3.6`. If you prefer compatible updates within the current major line, use the moving major tag `@v1`.
+Examples below pin the current release, `v1.3.7`. If you prefer compatible updates within the current major line, use the moving major tag `@v1`.
 
 ```yaml
-uses: HatsuneMiku3939/direnv-action@v1.3.6
+uses: HatsuneMiku3939/direnv-action@v1.3.7
 with:
   direnvVersion: 2.37.1
   masks: SECRET1, SECRET2
@@ -53,7 +53,7 @@ This loads the `.envrc` file from the repository root.
 To evaluate the `.envrc` in a subdirectory, set `path` explicitly:
 
 ```yaml
-uses: HatsuneMiku3939/direnv-action@v1.3.6
+uses: HatsuneMiku3939/direnv-action@v1.3.7
 with:
   path: child
   masks: SECRET1, SECRET2
@@ -62,7 +62,7 @@ with:
 To fail early when expected variables are not exported, set `required`:
 
 ```yaml
-uses: HatsuneMiku3939/direnv-action@v1.3.6
+uses: HatsuneMiku3939/direnv-action@v1.3.7
 with:
   required: |
     AWS_REGION
@@ -70,7 +70,7 @@ with:
     NODE_AUTH_TOKEN
 ```
 
-For the most predictable builds, pin an exact version tag such as `@v1.3.6`. Use `@v1` only when you want to receive the latest compatible `v1.x.y` release automatically.
+For the most predictable builds, pin an exact version tag such as `@v1.3.7`. Use `@v1` only when you want to receive the latest compatible `v1.x.y` release automatically.
 
 ## Behavior notes
 

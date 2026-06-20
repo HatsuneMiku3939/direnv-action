@@ -433,7 +433,7 @@
       <div class="manual-id" aria-label="Document metadata">
         <span>direnv-action(1)</span>
         <span>GitHub Actions</span>
-        <span>v1.3.6</span>
+        <span>v1.3.7</span>
       </div>
       <div class="masthead-line">
         <div>
@@ -506,7 +506,7 @@ $ mask secrets
           <div class="code-label">.github/workflows/example.yml</div>
           <pre><code>steps:
   - uses: actions/checkout@v7
-  - uses: HatsuneMiku3939/direnv-action@v1.3.6
+  - uses: HatsuneMiku3939/direnv-action@v1.3.7
     with:
       direnvVersion: 2.37.1
       masks: SECRET1, SECRET2</code></pre>
@@ -561,7 +561,7 @@ $ mask secrets
             <p>Use a known direnv version when workflow behavior must stay stable.</p>
             <div class="code-block">
               <div class="code-label">direnvVersion</div>
-              <pre><code>- uses: HatsuneMiku3939/direnv-action@v1.3.6
+              <pre><code>- uses: HatsuneMiku3939/direnv-action@v1.3.7
   with:
     direnvVersion: 2.37.1</code></pre>
             </div>
@@ -572,7 +572,7 @@ $ mask secrets
             <p>List exported variable names. Do not paste raw secret values into <code>masks</code>.</p>
             <div class="code-block">
               <div class="code-label">masks</div>
-              <pre><code>- uses: HatsuneMiku3939/direnv-action@v1.3.6
+              <pre><code>- uses: HatsuneMiku3939/direnv-action@v1.3.7
   with:
     masks: SECRET1, SECRET2</code></pre>
             </div>
@@ -583,7 +583,7 @@ $ mask secrets
             <p>Fail the step before exporting anything when expected variables are missing.</p>
             <div class="code-block">
               <div class="code-label">required</div>
-              <pre><code>- uses: HatsuneMiku3939/direnv-action@v1.3.6
+              <pre><code>- uses: HatsuneMiku3939/direnv-action@v1.3.7
   with:
     required: |
       AWS_REGION
@@ -597,7 +597,7 @@ $ mask secrets
             <p>Point <code>path</code> at the directory containing the target <code>.envrc</code>.</p>
             <div class="code-block">
               <div class="code-label">path</div>
-              <pre><code>- uses: HatsuneMiku3939/direnv-action@v1.3.6
+              <pre><code>- uses: HatsuneMiku3939/direnv-action@v1.3.7
   with:
     path: child</code></pre>
             </div>
