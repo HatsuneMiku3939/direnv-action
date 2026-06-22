@@ -83,10 +83,19 @@ For the most predictable builds, pin an exact version tag such as `@v1.3.7`. Use
 
 ## Security considerations
 
-This action evaluates `.envrc`, which means repository code can influence the shell commands executed by `direnv`.
+This action evaluates `.envrc`, which means repository code can influence the shell commands executed by `direnv`. Treat
+`.envrc` as executable code, especially in workflows that can access repository secrets, cloud credentials, deployment
+tokens, or production infrastructure.
 
 - Only use this action with trusted repositories and trusted `.envrc` contents.
-- Review fork-based pull request workflows carefully before allowing this action to run with secrets.
+- Avoid evaluating untrusted fork contents from `pull_request_target` workflows. If you use `pull_request_target`, do not
+  check out and run a fork-provided `.envrc` in a job that has access to secrets.
+- Prefer running secret-bearing jobs only on trusted refs, protected branches, or reviewed tags. For fork PR validation,
+  use `pull_request` with minimal permissions and without repository secrets unless the `.envrc` contents are trusted.
+- Use the `required` input to fail early when expected exported variables are missing. This helps prevent downstream steps
+  from running with incomplete configuration, but it is not a sandbox or a secret-protection boundary.
+- Keep workflow `permissions:` as narrow as possible and avoid passing long-lived credentials into jobs that evaluate
+  changing `.envrc` files.
 - Treat masking as a log redaction aid, not a complete secret protection boundary.
 - Keep sensitive logic inside trusted workflow contexts whenever possible.
 
