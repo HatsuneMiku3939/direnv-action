@@ -628,12 +628,31 @@ $ mask secrets
         <span class="section-kicker">Trust boundary</span>
         <h2>Security</h2>
         <div class="callout danger">
-          <code>.envrc</code> is executable project configuration. Treat it as code, especially in workflows that can access secrets.
+          <code>.envrc</code> is executable project configuration. Treat it as code, especially in workflows that can access
+          repository secrets, cloud credentials, deployment tokens, or production infrastructure.
         </div>
         <ul>
           <li>Run this action only with trusted repositories and trusted <code>.envrc</code> contents.</li>
-          <li>Review fork-based pull request workflows before exposing secrets.</li>
-          <li>Use masking as log redaction, not as a complete secret-protection boundary.</li>
+          <li>
+            Avoid evaluating untrusted fork contents from <code>pull_request_target</code> workflows. If you use
+            <code>pull_request_target</code>, do not check out and run a fork-provided <code>.envrc</code> in a job that
+            has access to secrets.
+          </li>
+          <li>
+            Prefer running secret-bearing jobs only on trusted refs, protected branches, or reviewed tags. For fork PR
+            validation, use <code>pull_request</code> with minimal permissions and without repository secrets unless the
+            <code>.envrc</code> contents are trusted.
+          </li>
+          <li>
+            Use the <code>required</code> input to fail early when expected exported variables are missing. This helps
+            prevent downstream steps from running with incomplete configuration, but it is not a sandbox or a
+            secret-protection boundary.
+          </li>
+          <li>
+            Keep workflow <code>permissions:</code> as narrow as possible and avoid passing long-lived credentials into
+            jobs that evaluate changing <code>.envrc</code> files.
+          </li>
+          <li>Use masking as log redaction, not as a complete secret protection boundary.</li>
           <li>Keep sensitive logic inside trusted workflow contexts whenever possible.</li>
         </ul>
       </section>
