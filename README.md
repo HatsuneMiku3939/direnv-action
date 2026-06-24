@@ -93,6 +93,7 @@ For the most predictable builds, pin an exact version tag such as `@v1.3.7`. Use
 - The action logs exported variable names for debugging, but it does not print environment variable values.
 - The action does not define custom outputs; consumers should read exported environment variables directly.
 - Cold installs verify the downloaded `direnv` binary before marking it executable or saving it to any cache.
+- When `direnvChecksum` is provided, the action cache key includes that checksum so different pins do not share cache entries.
 
 ## Security considerations
 

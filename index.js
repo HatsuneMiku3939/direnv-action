@@ -102,6 +102,8 @@ export async function verifyFileSha256(filePath, expectedDigest, assetName) {
 // internal functions
 export async function installTools() {
   const direnvVersion = core.getInput('direnvVersion');
+  const configuredChecksum = core.getInput('direnvChecksum');
+  const normalizedConfiguredChecksum = configuredChecksum ? normalizeSha256Digest(configuredChecksum) : '';
   core.info(`installing direnv-${direnvVersion} on ${platform}-${arch}`);
 
   // test direnv in cache
@@ -111,7 +113,8 @@ export async function installTools() {
     core.addPath(foundToolCache);
   } else {
     const workspace = process.env['GITHUB_WORKSPACE'];
-    const key = `hatsunemiku3939-direnv-action-toolcache-${direnvVersion}-${platform}-${arch}`;
+    const checksumCacheKeySegment = normalizedConfiguredChecksum ? `-${normalizedConfiguredChecksum}` : '';
+    const key = `hatsunemiku3939-direnv-action-toolcache-${direnvVersion}-${platform}-${arch}${checksumCacheKeySegment}`;
     const paths = [`${workspace}/.direnv-action`];
     const restoreKeys = [key];
 
@@ -134,8 +137,7 @@ export async function installTools() {
       const assetName = direnvBinaryAssetName(platform, arch);
       const dlUrl = direnvBinaryURL(direnvVersion, platform, arch);
       core.info(`direnv not found in cache, installing ${dlUrl} ...`);
-      const configuredChecksum = core.getInput('direnvChecksum');
-      const expectedDigest = configuredChecksum || await fetchDirenvReleaseAssetDigest(direnvVersion, assetName);
+      const expectedDigest = normalizedConfiguredChecksum || await fetchDirenvReleaseAssetDigest(direnvVersion, assetName);
       const installPath = await tc.downloadTool(dlUrl);
 
       // Verify the binary before making it executable or saving it to any cache.

@@ -382,7 +382,16 @@ describe('installTools', () => {
     expect(downloadTool).toHaveBeenCalledWith(
       'https://github.com/direnv/direnv/releases/download/v2.37.1/direnv.linux-amd64'
     );
+    expect(restoreCache).toHaveBeenCalledWith(
+      ['/workspace/.direnv-action'],
+      `hatsunemiku3939-direnv-action-toolcache-2.37.1-linux-x64-${testBinaryDigest}`,
+      [`hatsunemiku3939-direnv-action-toolcache-2.37.1-linux-x64-${testBinaryDigest}`]
+    );
     expect(exec).toHaveBeenCalledWith('chmod', ['+x', downloadedDirenvPath]);
+    expect(saveCache).toHaveBeenCalledWith(
+      ['/workspace/.direnv-action'],
+      `hatsunemiku3939-direnv-action-toolcache-2.37.1-linux-x64-${testBinaryDigest}`
+    );
     expect(cacheFile).toHaveBeenCalledWith(downloadedDirenvPath, 'direnv', 'direnv', '2.37.1');
   });
 

@@ -92481,6 +92481,8 @@ async function verifyFileSha256(filePath, expectedDigest, assetName) {
 // internal functions
 async function installTools() {
   const direnvVersion = getInput('direnvVersion');
+  const configuredChecksum = getInput('direnvChecksum');
+  const normalizedConfiguredChecksum = configuredChecksum ? normalizeSha256Digest(configuredChecksum) : '';
   info(`installing direnv-${direnvVersion} on ${external_node_process_namespaceObject.platform}-${external_node_process_namespaceObject.arch}`);
 
   // test direnv in cache
@@ -92490,7 +92492,8 @@ async function installTools() {
     addPath(foundToolCache);
   } else {
     const workspace = process.env['GITHUB_WORKSPACE'];
-    const key = `hatsunemiku3939-direnv-action-toolcache-${direnvVersion}-${external_node_process_namespaceObject.platform}-${external_node_process_namespaceObject.arch}`;
+    const checksumCacheKeySegment = normalizedConfiguredChecksum ? `-${normalizedConfiguredChecksum}` : '';
+    const key = `hatsunemiku3939-direnv-action-toolcache-${direnvVersion}-${external_node_process_namespaceObject.platform}-${external_node_process_namespaceObject.arch}${checksumCacheKeySegment}`;
     const paths = [`${workspace}/.direnv-action`];
     const restoreKeys = [key];
 
@@ -92513,8 +92516,7 @@ async function installTools() {
       const assetName = direnvBinaryAssetName(external_node_process_namespaceObject.platform, external_node_process_namespaceObject.arch);
       const dlUrl = direnvBinaryURL(direnvVersion, external_node_process_namespaceObject.platform, external_node_process_namespaceObject.arch);
       info(`direnv not found in cache, installing ${dlUrl} ...`);
-      const configuredChecksum = getInput('direnvChecksum');
-      const expectedDigest = configuredChecksum || await fetchDirenvReleaseAssetDigest(direnvVersion, assetName);
+      const expectedDigest = normalizedConfiguredChecksum || await fetchDirenvReleaseAssetDigest(direnvVersion, assetName);
       const installPath = await downloadTool(dlUrl);
 
       // Verify the binary before making it executable or saving it to any cache.
