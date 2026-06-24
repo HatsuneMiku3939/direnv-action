@@ -18,6 +18,7 @@ Documentation site: https://hatsunemiku3939.github.io/direnv-action/
 The action performs the following steps:
 
 1. Installs the requested `direnv` version from the GitHub release assets or a cache.
+   Cold installs verify the downloaded binary's SHA-256 digest before execution or caching.
 2. Runs `direnv allow` for the configured `path`.
 3. Runs `direnv export json` in the configured `path`.
 4. Logs the exported environment variable names without printing their values.
@@ -29,6 +30,7 @@ The action performs the following steps:
 ## Inputs
 
 - `direnvVersion`: The `direnv` version to use. Default: `2.37.1`.
+- `direnvChecksum`: Optional SHA-256 checksum for the downloaded `direnv` binary. Default: `''`.
 - `masks`: A comma-separated list of environment variable names to mask. Default: `''`.
 - `required`: A newline-delimited list of environment variable names that must be exported. Default: `''`.
 - `path`: The directory where `direnv allow` and `direnv export json` are executed. Default: `.`.
@@ -49,6 +51,16 @@ with:
 ```
 
 This loads the `.envrc` file from the repository root.
+
+By default, cold installs verify the downloaded `direnv` binary against the GitHub Release API asset digest. To pin an
+expected digest yourself, set `direnvChecksum` to either a plain SHA-256 hex digest or a `sha256:<digest>` value:
+
+```yaml
+uses: HatsuneMiku3939/direnv-action@v1.3.7
+with:
+  direnvVersion: 2.37.1
+  direnvChecksum: sha256:1f1b93dd6f38523fde26dfac96151ef9d31a374e3005cd3345fb93555ae0c9b5
+```
 
 To evaluate the `.envrc` in a subdirectory, set `path` explicitly:
 
@@ -80,6 +92,8 @@ For the most predictable builds, pin an exact version tag such as `@v1.3.7`. Use
 - Variables exported by `direnv export json` are available to later workflow steps in the same job.
 - The action logs exported variable names for debugging, but it does not print environment variable values.
 - The action does not define custom outputs; consumers should read exported environment variables directly.
+- Cold installs verify the downloaded `direnv` binary before marking it executable or saving it to any cache.
+- When `direnvChecksum` is provided, the action cache key includes that checksum so different pins do not share cache entries.
 
 ## Security considerations
 
@@ -98,6 +112,8 @@ tokens, or production infrastructure.
   changing `.envrc` files.
 - Treat masking as a log redaction aid, not a complete secret protection boundary.
 - Keep sensitive logic inside trusted workflow contexts whenever possible.
+- Download verification uses the GitHub Release API asset digest by default. This protects against corrupted or swapped
+  download bytes relative to GitHub's release metadata. For a stronger independent pin, provide `direnvChecksum`.
 
 ## Development
 
@@ -114,7 +130,7 @@ For release preparation, use the full gate so the generated `dist/` artifacts st
 npm run all
 ```
 
-The Vitest unit tests cover binary URL selection, tool installation cache branches, environment export behavior, required variable validation, secret masking, and the main action flow with mocked GitHub Actions APIs.
+The Vitest unit tests cover binary URL selection, downloaded binary checksum verification, tool installation cache branches, environment export behavior, required variable validation, secret masking, and the main action flow with mocked GitHub Actions APIs.
 
 ## Supported platforms and architectures
 

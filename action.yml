@@ -16,6 +16,10 @@ inputs:
     description: 'direnv version to use'
     required: true
     default: '2.37.1'
+  direnvChecksum:
+    description: 'Optional SHA-256 checksum for the downloaded direnv binary'
+    required: false
+    default: ''
   path:
     description: 'Directory where direnv is evaluated'
     required: true

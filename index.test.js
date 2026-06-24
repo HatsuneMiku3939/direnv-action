@@ -1,4 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { createHash } from 'node:crypto';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const mocks = vi.hoisted(() => ({
   getInput: vi.fn(),
@@ -13,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   exec: vi.fn(),
   restoreCache: vi.fn(),
   saveCache: vi.fn(),
+  fetch: vi.fn(),
 }));
 
 const {
@@ -28,6 +33,7 @@ const {
   exec,
   restoreCache,
   saveCache,
+  fetch,
 } = mocks;
 
 vi.mock('@actions/core', () => ({
@@ -56,30 +62,69 @@ vi.mock('@actions/cache', () => ({
 
 const {
   applyEnvVars,
+  direnvBinaryAssetName,
   direnvBinaryURL,
   errorMessage,
+  fetchDirenvReleaseAssetDigest,
   installTools,
   logExportedEnvVars,
+  normalizeSha256Digest,
   main,
   parseRequiredEnvVarNames,
   setMasks,
+  sha256File,
   validateRequiredEnvVars,
+  verifyFileSha256,
 } = await import('./index.js');
+
+const testBinaryContent = 'test direnv binary';
+const testBinaryDigest = createHash('sha256').update(testBinaryContent).digest('hex');
+let tempDir;
+let downloadedDirenvPath;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  tempDir = mkdtempSync(join(tmpdir(), 'direnv-action-test-'));
+  downloadedDirenvPath = join(tempDir, 'direnv');
+  writeFileSync(downloadedDirenvPath, testBinaryContent);
+  vi.stubGlobal('fetch', fetch);
   getInput.mockImplementation(() => '');
   find.mockReturnValue('');
   cacheFile.mockResolvedValue('/tool-cache/direnv');
-  downloadTool.mockResolvedValue('/tmp/direnv');
+  downloadTool.mockResolvedValue(downloadedDirenvPath);
   restoreCache.mockResolvedValue(undefined);
   saveCache.mockResolvedValue(1);
   exec.mockResolvedValue(0);
+  fetch.mockResolvedValue({
+    ok: true,
+    status: 200,
+    json: async () => ({
+      assets: [
+        {
+          name: 'direnv.linux-amd64',
+          digest: `sha256:${testBinaryDigest}`,
+        },
+      ],
+    }),
+  });
   process.env.GITHUB_WORKSPACE = '/workspace';
 });
 
 afterEach(() => {
+  vi.unstubAllGlobals();
+  rmSync(tempDir, { force: true, recursive: true });
   delete process.env.GITHUB_WORKSPACE;
+});
+
+describe('direnvBinaryAssetName', () => {
+  test.each([
+    ['linux', 'x64', 'direnv.linux-amd64'],
+    ['linux', 'arm64', 'direnv.linux-arm64'],
+    ['darwin', 'x64', 'direnv.darwin-amd64'],
+    ['darwin', 'arm64', 'direnv.darwin-arm64'],
+  ])('returns the correct asset name for %s/%s', (targetPlatform, targetArch, expected) => {
+    expect(direnvBinaryAssetName(targetPlatform, targetArch)).toBe(expected);
+  });
 });
 
 describe('direnvBinaryURL', () => {
@@ -97,6 +142,83 @@ describe('direnvBinaryURL', () => {
     ['2.37.1', 'linux', 'arm', 'unsupported arch: arm'],
   ])('throws for unsupported targets: %s on %s/%s', (version, targetPlatform, targetArch, expectedMessage) => {
     expect(() => direnvBinaryURL(version, targetPlatform, targetArch)).toThrow(expectedMessage);
+  });
+});
+
+describe('checksum verification', () => {
+  test.each([
+    [`sha256:${testBinaryDigest}`, testBinaryDigest],
+    [testBinaryDigest.toUpperCase(), testBinaryDigest],
+  ])('normalizes SHA-256 digest %p', (rawDigest, expected) => {
+    expect(normalizeSha256Digest(rawDigest)).toBe(expected);
+  });
+
+  test('rejects malformed SHA-256 digests', () => {
+    expect(() => normalizeSha256Digest('sha256:not-a-digest')).toThrow('Invalid SHA-256 digest: sha256:not-a-digest');
+  });
+
+  test('hashes files with SHA-256', async () => {
+    await expect(sha256File(downloadedDirenvPath)).resolves.toBe(testBinaryDigest);
+  });
+
+  test('verifies a matching file digest', async () => {
+    await expect(verifyFileSha256(downloadedDirenvPath, testBinaryDigest, 'direnv.linux-amd64')).resolves.toBe(testBinaryDigest);
+  });
+
+  test('fails when the file digest does not match', async () => {
+    await expect(verifyFileSha256(downloadedDirenvPath, '0'.repeat(64), 'direnv.linux-amd64')).rejects.toThrow(
+      `Downloaded direnv.linux-amd64 checksum mismatch: expected sha256:${'0'.repeat(64)}, got sha256:${testBinaryDigest}`
+    );
+  });
+
+  test('fetches the GitHub release asset digest', async () => {
+    await expect(fetchDirenvReleaseAssetDigest('2.37.1', 'direnv.linux-amd64')).resolves.toBe(testBinaryDigest);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://api.github.com/repos/direnv/direnv/releases/tags/v2.37.1',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Accept: 'application/vnd.github+json',
+          'User-Agent': 'direnv-action',
+        }),
+      })
+    );
+  });
+
+  test('fails when release metadata cannot be fetched', async () => {
+    fetch.mockResolvedValue({
+      ok: false,
+      status: 404,
+    });
+
+    await expect(fetchDirenvReleaseAssetDigest('2.37.1', 'direnv.linux-amd64')).rejects.toThrow(
+      'Failed to fetch direnv release metadata for v2.37.1: HTTP 404'
+    );
+  });
+
+  test('fails when the release asset is missing', async () => {
+    fetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ assets: [] }),
+    });
+
+    await expect(fetchDirenvReleaseAssetDigest('2.37.1', 'direnv.linux-amd64')).rejects.toThrow(
+      'direnv release v2.37.1 does not include asset direnv.linux-amd64'
+    );
+  });
+
+  test('fails when the release asset digest is missing', async () => {
+    fetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        assets: [{ name: 'direnv.linux-amd64' }],
+      }),
+    });
+
+    await expect(fetchDirenvReleaseAssetDigest('2.37.1', 'direnv.linux-amd64')).rejects.toThrow(
+      'direnv release asset direnv.linux-amd64 does not include a digest'
+    );
   });
 });
 
@@ -229,17 +351,73 @@ describe('installTools', () => {
       'https://github.com/direnv/direnv/releases/download/v2.37.1/direnv.linux-amd64'
     );
     expect(exec.mock.calls).toEqual(expect.arrayContaining([
-      ['chmod', ['+x', '/tmp/direnv']],
+      ['chmod', ['+x', downloadedDirenvPath]],
       ['mkdir', ['/workspace/.direnv-action']],
-      ['cp', ['/tmp/direnv', '/workspace/.direnv-action/direnv']],
+      ['cp', [downloadedDirenvPath, '/workspace/.direnv-action/direnv']],
       ['rm', ['-rf', '/workspace/.direnv-action']],
     ]));
     expect(saveCache).toHaveBeenCalledWith(
       ['/workspace/.direnv-action'],
       'hatsunemiku3939-direnv-action-toolcache-2.37.1-linux-x64'
     );
-    expect(cacheFile).toHaveBeenCalledWith('/tmp/direnv', 'direnv', 'direnv', '2.37.1');
+    expect(cacheFile).toHaveBeenCalledWith(downloadedDirenvPath, 'direnv', 'direnv', '2.37.1');
     expect(addPath).toHaveBeenCalledWith('/tool-cache/direnv');
+  });
+
+  test('uses a configured checksum without fetching release metadata', async () => {
+    getInput.mockImplementation((name) => {
+      switch (name) {
+        case 'direnvVersion':
+          return '2.37.1';
+        case 'direnvChecksum':
+          return testBinaryDigest;
+        default:
+          return '';
+      }
+    });
+
+    await installTools();
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(downloadTool).toHaveBeenCalledWith(
+      'https://github.com/direnv/direnv/releases/download/v2.37.1/direnv.linux-amd64'
+    );
+    expect(restoreCache).toHaveBeenCalledWith(
+      ['/workspace/.direnv-action'],
+      `hatsunemiku3939-direnv-action-toolcache-2.37.1-linux-x64-${testBinaryDigest}`,
+      [`hatsunemiku3939-direnv-action-toolcache-2.37.1-linux-x64-${testBinaryDigest}`]
+    );
+    expect(exec).toHaveBeenCalledWith('chmod', ['+x', downloadedDirenvPath]);
+    expect(saveCache).toHaveBeenCalledWith(
+      ['/workspace/.direnv-action'],
+      `hatsunemiku3939-direnv-action-toolcache-2.37.1-linux-x64-${testBinaryDigest}`
+    );
+    expect(cacheFile).toHaveBeenCalledWith(downloadedDirenvPath, 'direnv', 'direnv', '2.37.1');
+  });
+
+  test('fails before chmod or caching when checksum verification fails', async () => {
+    getInput.mockImplementation((name) => (name === 'direnvVersion' ? '2.37.1' : ''));
+    fetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        assets: [
+          {
+            name: 'direnv.linux-amd64',
+            digest: `sha256:${'0'.repeat(64)}`,
+          },
+        ],
+      }),
+    });
+
+    await expect(installTools()).rejects.toThrow(
+      `Downloaded direnv.linux-amd64 checksum mismatch: expected sha256:${'0'.repeat(64)}, got sha256:${testBinaryDigest}`
+    );
+    expect(downloadTool).toHaveBeenCalled();
+    expect(exec).not.toHaveBeenCalledWith('chmod', ['+x', downloadedDirenvPath]);
+    expect(saveCache).not.toHaveBeenCalled();
+    expect(cacheFile).not.toHaveBeenCalled();
+    expect(addPath).not.toHaveBeenCalled();
   });
 });
 
