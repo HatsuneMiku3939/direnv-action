@@ -3,16 +3,15 @@ import * as tc from '@actions/tool-cache';
 import * as exec from '@actions/exec';
 import * as cache from '@actions/cache';
 
+import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 import { platform, arch } from 'node:process';
 import { pathToFileURL } from 'node:url';
 
 const ENV_VAR_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const DIRENV_RELEASE_API_BASE = 'https://api.github.com/repos/direnv/direnv/releases/tags';
 
-export function direnvBinaryURL(version, platform, arch) {
-  const baseurl = `https://github.com/direnv/direnv/releases/download/v${version}/direnv`;
-
-  // supported arch: x64, arm64
-  // supported platform: linux, darwin
+export function direnvBinaryAssetName(platform, arch) {
   const supportedArch = ['x64', 'arm64'];
   const supportedPlatform = ['linux', 'darwin'];
 
@@ -28,16 +27,76 @@ export function direnvBinaryURL(version, platform, arch) {
 
   switch (archPlatform) {
     case 'linux-x64':
-      return `${baseurl}.linux-amd64`;
+      return 'direnv.linux-amd64';
     case 'linux-arm64':
-      return `${baseurl}.linux-arm64`;
+      return 'direnv.linux-arm64';
     case 'darwin-x64':
-      return `${baseurl}.darwin-amd64`;
+      return 'direnv.darwin-amd64';
     case 'darwin-arm64':
-      return `${baseurl}.darwin-arm64`;
+      return 'direnv.darwin-arm64';
     default:
       throw new Error(`unsupported platform: ${archPlatform}`);
   }
+}
+
+export function direnvBinaryURL(version, platform, arch) {
+  const baseurl = `https://github.com/direnv/direnv/releases/download/v${version}/direnv`;
+  return `${baseurl}.${direnvBinaryAssetName(platform, arch).replace('direnv.', '')}`;
+}
+
+export function normalizeSha256Digest(rawDigest) {
+  const digest = rawDigest.trim().toLowerCase().replace(/^sha256:/, '');
+
+  if (!/^[a-f0-9]{64}$/.test(digest)) {
+    throw new Error(`Invalid SHA-256 digest: ${rawDigest}`);
+  }
+
+  return digest;
+}
+
+export async function sha256File(filePath) {
+  const contents = await readFile(filePath);
+  return createHash('sha256').update(contents).digest('hex');
+}
+
+export async function fetchDirenvReleaseAssetDigest(version, assetName) {
+  const response = await fetch(`${DIRENV_RELEASE_API_BASE}/v${version}`, {
+    headers: {
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'direnv-action',
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch direnv release metadata for v${version}: HTTP ${response.status}`);
+  }
+
+  const release = await response.json();
+  const asset = release.assets?.find((candidate) => candidate.name === assetName);
+
+  if (!asset) {
+    throw new Error(`direnv release v${version} does not include asset ${assetName}`);
+  }
+
+  if (!asset.digest) {
+    throw new Error(`direnv release asset ${assetName} does not include a digest`);
+  }
+
+  return normalizeSha256Digest(asset.digest);
+}
+
+export async function verifyFileSha256(filePath, expectedDigest, assetName) {
+  const normalizedExpected = normalizeSha256Digest(expectedDigest);
+  const actualDigest = await sha256File(filePath);
+
+  if (actualDigest !== normalizedExpected) {
+    throw new Error(
+      `Downloaded ${assetName} checksum mismatch: expected sha256:${normalizedExpected}, got sha256:${actualDigest}`
+    );
+  }
+
+  return actualDigest;
 }
 
 // internal functions
@@ -72,9 +131,16 @@ export async function installTools() {
       // clear
       await exec.exec('rm', [`-rf`, `${workspace}/.direnv-action`]);
     } else {
+      const assetName = direnvBinaryAssetName(platform, arch);
       const dlUrl = direnvBinaryURL(direnvVersion, platform, arch);
       core.info(`direnv not found in cache, installing ${dlUrl} ...`);
+      const configuredChecksum = core.getInput('direnvChecksum');
+      const expectedDigest = configuredChecksum || await fetchDirenvReleaseAssetDigest(direnvVersion, assetName);
       const installPath = await tc.downloadTool(dlUrl);
+
+      // Verify the binary before making it executable or saving it to any cache.
+      await verifyFileSha256(installPath, expectedDigest, assetName);
+      core.info(`verified ${assetName} sha256 checksum`);
 
       // set permissions
       core.info(`direnv installed ${installPath}, setting permissions...`);

@@ -41546,15 +41546,20 @@ var __webpack_exports__ = {};
 __nccwpck_require__.d(__webpack_exports__, {
   y1: () => (/* binding */ allowEnvrc),
   qe: () => (/* binding */ applyEnvVars),
+  p2: () => (/* binding */ direnvBinaryAssetName),
   $8: () => (/* binding */ direnvBinaryURL),
   gJ: () => (/* binding */ errorMessage),
   Fe: () => (/* binding */ exportEnvrc),
+  up: () => (/* binding */ fetchDirenvReleaseAssetDigest),
   HG: () => (/* binding */ installTools),
   nc: () => (/* binding */ logExportedEnvVars),
   iW: () => (/* binding */ main),
+  Xm: () => (/* binding */ normalizeSha256Digest),
   lR: () => (/* binding */ parseRequiredEnvVarNames),
   OY: () => (/* binding */ setMasks),
-  r0: () => (/* binding */ validateRequiredEnvVars)
+  Q3: () => (/* binding */ sha256File),
+  r0: () => (/* binding */ validateRequiredEnvVars),
+  Z2: () => (/* binding */ verifyFileSha256)
 });
 
 // NAMESPACE OBJECT: ./node_modules/@azure/storage-blob/dist/esm/generated/src/models/mappers.js
@@ -92367,6 +92372,8 @@ function saveCacheV2(paths_1, key_1, options_1) {
     });
 }
 //# sourceMappingURL=cache.js.map
+;// CONCATENATED MODULE: external "node:fs/promises"
+const promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:fs/promises");
 // EXTERNAL MODULE: external "node:url"
 var external_node_url_ = __nccwpck_require__(3136);
 ;// CONCATENATED MODULE: ./index.js
@@ -92378,13 +92385,12 @@ var external_node_url_ = __nccwpck_require__(3136);
 
 
 
+
+
 const ENV_VAR_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const DIRENV_RELEASE_API_BASE = 'https://api.github.com/repos/direnv/direnv/releases/tags';
 
-function direnvBinaryURL(version, platform, arch) {
-  const baseurl = `https://github.com/direnv/direnv/releases/download/v${version}/direnv`;
-
-  // supported arch: x64, arm64
-  // supported platform: linux, darwin
+function direnvBinaryAssetName(platform, arch) {
   const supportedArch = ['x64', 'arm64'];
   const supportedPlatform = ['linux', 'darwin'];
 
@@ -92400,16 +92406,76 @@ function direnvBinaryURL(version, platform, arch) {
 
   switch (archPlatform) {
     case 'linux-x64':
-      return `${baseurl}.linux-amd64`;
+      return 'direnv.linux-amd64';
     case 'linux-arm64':
-      return `${baseurl}.linux-arm64`;
+      return 'direnv.linux-arm64';
     case 'darwin-x64':
-      return `${baseurl}.darwin-amd64`;
+      return 'direnv.darwin-amd64';
     case 'darwin-arm64':
-      return `${baseurl}.darwin-arm64`;
+      return 'direnv.darwin-arm64';
     default:
       throw new Error(`unsupported platform: ${archPlatform}`);
   }
+}
+
+function direnvBinaryURL(version, platform, arch) {
+  const baseurl = `https://github.com/direnv/direnv/releases/download/v${version}/direnv`;
+  return `${baseurl}.${direnvBinaryAssetName(platform, arch).replace('direnv.', '')}`;
+}
+
+function normalizeSha256Digest(rawDigest) {
+  const digest = rawDigest.trim().toLowerCase().replace(/^sha256:/, '');
+
+  if (!/^[a-f0-9]{64}$/.test(digest)) {
+    throw new Error(`Invalid SHA-256 digest: ${rawDigest}`);
+  }
+
+  return digest;
+}
+
+async function sha256File(filePath) {
+  const contents = await (0,promises_namespaceObject.readFile)(filePath);
+  return (0,external_node_crypto_.createHash)('sha256').update(contents).digest('hex');
+}
+
+async function fetchDirenvReleaseAssetDigest(version, assetName) {
+  const response = await fetch(`${DIRENV_RELEASE_API_BASE}/v${version}`, {
+    headers: {
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'direnv-action',
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch direnv release metadata for v${version}: HTTP ${response.status}`);
+  }
+
+  const release = await response.json();
+  const asset = release.assets?.find((candidate) => candidate.name === assetName);
+
+  if (!asset) {
+    throw new Error(`direnv release v${version} does not include asset ${assetName}`);
+  }
+
+  if (!asset.digest) {
+    throw new Error(`direnv release asset ${assetName} does not include a digest`);
+  }
+
+  return normalizeSha256Digest(asset.digest);
+}
+
+async function verifyFileSha256(filePath, expectedDigest, assetName) {
+  const normalizedExpected = normalizeSha256Digest(expectedDigest);
+  const actualDigest = await sha256File(filePath);
+
+  if (actualDigest !== normalizedExpected) {
+    throw new Error(
+      `Downloaded ${assetName} checksum mismatch: expected sha256:${normalizedExpected}, got sha256:${actualDigest}`
+    );
+  }
+
+  return actualDigest;
 }
 
 // internal functions
@@ -92444,9 +92510,16 @@ async function installTools() {
       // clear
       await exec_exec('rm', [`-rf`, `${workspace}/.direnv-action`]);
     } else {
+      const assetName = direnvBinaryAssetName(external_node_process_namespaceObject.platform, external_node_process_namespaceObject.arch);
       const dlUrl = direnvBinaryURL(direnvVersion, external_node_process_namespaceObject.platform, external_node_process_namespaceObject.arch);
       info(`direnv not found in cache, installing ${dlUrl} ...`);
+      const configuredChecksum = getInput('direnvChecksum');
+      const expectedDigest = configuredChecksum || await fetchDirenvReleaseAssetDigest(direnvVersion, assetName);
       const installPath = await downloadTool(dlUrl);
+
+      // Verify the binary before making it executable or saving it to any cache.
+      await verifyFileSha256(installPath, expectedDigest, assetName);
+      info(`verified ${assetName} sha256 checksum`);
 
       // set permissions
       info(`direnv installed ${installPath}, setting permissions...`);
@@ -92602,15 +92675,20 @@ if (process.argv[1] && import.meta.url === (0,external_node_url_.pathToFileURL)(
 
 var __webpack_exports__allowEnvrc = __webpack_exports__.y1;
 var __webpack_exports__applyEnvVars = __webpack_exports__.qe;
+var __webpack_exports__direnvBinaryAssetName = __webpack_exports__.p2;
 var __webpack_exports__direnvBinaryURL = __webpack_exports__.$8;
 var __webpack_exports__errorMessage = __webpack_exports__.gJ;
 var __webpack_exports__exportEnvrc = __webpack_exports__.Fe;
+var __webpack_exports__fetchDirenvReleaseAssetDigest = __webpack_exports__.up;
 var __webpack_exports__installTools = __webpack_exports__.HG;
 var __webpack_exports__logExportedEnvVars = __webpack_exports__.nc;
 var __webpack_exports__main = __webpack_exports__.iW;
+var __webpack_exports__normalizeSha256Digest = __webpack_exports__.Xm;
 var __webpack_exports__parseRequiredEnvVarNames = __webpack_exports__.lR;
 var __webpack_exports__setMasks = __webpack_exports__.OY;
+var __webpack_exports__sha256File = __webpack_exports__.Q3;
 var __webpack_exports__validateRequiredEnvVars = __webpack_exports__.r0;
-export { __webpack_exports__allowEnvrc as allowEnvrc, __webpack_exports__applyEnvVars as applyEnvVars, __webpack_exports__direnvBinaryURL as direnvBinaryURL, __webpack_exports__errorMessage as errorMessage, __webpack_exports__exportEnvrc as exportEnvrc, __webpack_exports__installTools as installTools, __webpack_exports__logExportedEnvVars as logExportedEnvVars, __webpack_exports__main as main, __webpack_exports__parseRequiredEnvVarNames as parseRequiredEnvVarNames, __webpack_exports__setMasks as setMasks, __webpack_exports__validateRequiredEnvVars as validateRequiredEnvVars };
+var __webpack_exports__verifyFileSha256 = __webpack_exports__.Z2;
+export { __webpack_exports__allowEnvrc as allowEnvrc, __webpack_exports__applyEnvVars as applyEnvVars, __webpack_exports__direnvBinaryAssetName as direnvBinaryAssetName, __webpack_exports__direnvBinaryURL as direnvBinaryURL, __webpack_exports__errorMessage as errorMessage, __webpack_exports__exportEnvrc as exportEnvrc, __webpack_exports__fetchDirenvReleaseAssetDigest as fetchDirenvReleaseAssetDigest, __webpack_exports__installTools as installTools, __webpack_exports__logExportedEnvVars as logExportedEnvVars, __webpack_exports__main as main, __webpack_exports__normalizeSha256Digest as normalizeSha256Digest, __webpack_exports__parseRequiredEnvVarNames as parseRequiredEnvVarNames, __webpack_exports__setMasks as setMasks, __webpack_exports__sha256File as sha256File, __webpack_exports__validateRequiredEnvVars as validateRequiredEnvVars, __webpack_exports__verifyFileSha256 as verifyFileSha256 };
 
 //# sourceMappingURL=index.js.map

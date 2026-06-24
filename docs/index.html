@@ -534,6 +534,11 @@ $ mask secrets
               <td>Selecting the direnv binary version installed from release assets or cache.</td>
             </tr>
             <tr>
+              <td><code>direnvChecksum</code></td>
+              <td><code>''</code></td>
+              <td>Optionally pinning the SHA-256 digest expected for the downloaded direnv binary.</td>
+            </tr>
+            <tr>
               <td><code>masks</code></td>
               <td><code>''</code></td>
               <td>Comma-separated environment variable names whose exported values should be redacted from logs.</td>
@@ -558,12 +563,24 @@ $ mask secrets
         <div class="examples">
           <article class="example">
             <h3>Pin direnv</h3>
-            <p>Use a known direnv version when workflow behavior must stay stable.</p>
+            <p>Use a known direnv version when workflow behavior must stay stable. Cold installs verify the binary digest before execution or caching.</p>
             <div class="code-block">
               <div class="code-label">direnvVersion</div>
               <pre><code>- uses: HatsuneMiku3939/direnv-action@v1.3.7
   with:
     direnvVersion: 2.37.1</code></pre>
+            </div>
+          </article>
+
+          <article class="example">
+            <h3>Pin the binary digest</h3>
+            <p>By default the action uses the GitHub Release API asset digest. Provide <code>direnvChecksum</code> for an independent SHA-256 pin.</p>
+            <div class="code-block">
+              <div class="code-label">direnvChecksum</div>
+              <pre><code>- uses: HatsuneMiku3939/direnv-action@v1.3.7
+  with:
+    direnvVersion: 2.37.1
+    direnvChecksum: sha256:1f1b93dd6f38523fde26dfac96151ef9d31a374e3005cd3345fb93555ae0c9b5</code></pre>
             </div>
           </article>
 
@@ -622,6 +639,12 @@ $ mask secrets
           When <code>.envrc</code> exports <code>PATH</code>, the action appends it through the GitHub Actions path API.
           Later steps in the same job receive the updated path.
         </p>
+        <h3>Downloaded direnv checksum mismatch</h3>
+        <p>
+          Confirm <code>direnvVersion</code> and <code>direnvChecksum</code> refer to the same upstream binary. If
+          <code>direnvChecksum</code> is not set, retry after checking that the upstream GitHub release asset metadata is
+          available.
+        </p>
       </section>
 
       <section id="security">
@@ -633,6 +656,11 @@ $ mask secrets
         </div>
         <ul>
           <li>Run this action only with trusted repositories and trusted <code>.envrc</code> contents.</li>
+          <li>
+            Cold installs verify the downloaded <code>direnv</code> binary before making it executable or saving it to
+            cache. By default this uses the GitHub Release API asset digest; set <code>direnvChecksum</code> for a
+            stronger independent pin.
+          </li>
           <li>
             Avoid evaluating untrusted fork contents from <code>pull_request_target</code> workflows. If you use
             <code>pull_request_target</code>, do not check out and run a fork-provided <code>.envrc</code> in a job that
