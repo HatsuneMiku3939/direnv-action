@@ -41558,8 +41558,10 @@ __nccwpck_require__.d(__webpack_exports__, {
   lR: () => (/* binding */ parseRequiredEnvVarNames),
   OY: () => (/* binding */ setMasks),
   Q3: () => (/* binding */ sha256File),
+  sw: () => (/* binding */ shouldRetryDirenvReleaseMetadataFetch),
   r0: () => (/* binding */ validateRequiredEnvVars),
-  Z2: () => (/* binding */ verifyFileSha256)
+  Z2: () => (/* binding */ verifyFileSha256),
+  fS: () => (/* binding */ waitForRetry)
 });
 
 // NAMESPACE OBJECT: ./node_modules/@azure/storage-blob/dist/esm/generated/src/models/mappers.js
@@ -92389,6 +92391,8 @@ var external_node_url_ = __nccwpck_require__(3136);
 
 const ENV_VAR_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
 const DIRENV_RELEASE_API_BASE = 'https://api.github.com/repos/direnv/direnv/releases/tags';
+const DIRENV_RELEASE_DIGEST_FETCH_ATTEMPTS = 3;
+const DIRENV_RELEASE_DIGEST_RETRY_DELAY_MS = 500;
 
 function direnvBinaryAssetName(platform, arch) {
   const supportedArch = ['x64', 'arm64'];
@@ -92438,31 +92442,83 @@ async function sha256File(filePath) {
   return (0,external_node_crypto_.createHash)('sha256').update(contents).digest('hex');
 }
 
-async function fetchDirenvReleaseAssetDigest(version, assetName) {
-  const response = await fetch(`${DIRENV_RELEASE_API_BASE}/v${version}`, {
-    headers: {
-      Accept: 'application/vnd.github+json',
-      'User-Agent': 'direnv-action',
-      'X-GitHub-Api-Version': '2022-11-28',
-    },
+function shouldRetryDirenvReleaseMetadataFetch(error) {
+  return error?.retryable === true;
+}
+
+async function waitForRetry(ms) {
+  if (ms <= 0) {
+    return;
+  }
+
+  await new Promise((resolve) => {
+    setTimeout(resolve, ms);
   });
+}
+
+async function fetchDirenvReleaseMetadata(version) {
+  let response;
+
+  try {
+    response = await fetch(`${DIRENV_RELEASE_API_BASE}/v${version}`, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        'User-Agent': 'direnv-action',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    });
+  } catch (error) {
+    const retryableError = new Error(`Failed to fetch direnv release metadata for v${version}: ${errorMessage(error)}`);
+    retryableError.retryable = true;
+    throw retryableError;
+  }
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch direnv release metadata for v${version}: HTTP ${response.status}`);
+    const error = new Error(`Failed to fetch direnv release metadata for v${version}: HTTP ${response.status}`);
+    error.retryable = response.status === 429 || response.status >= 500;
+    throw error;
   }
 
-  const release = await response.json();
-  const asset = release.assets?.find((candidate) => candidate.name === assetName);
+  try {
+    return await response.json();
+  } catch (error) {
+    const retryableError = new Error(`Failed to parse direnv release metadata for v${version}: ${errorMessage(error)}`);
+    retryableError.retryable = true;
+    throw retryableError;
+  }
+}
 
-  if (!asset) {
-    throw new Error(`direnv release v${version} does not include asset ${assetName}`);
+async function fetchDirenvReleaseAssetDigest(version, assetName, options = {}) {
+  const attempts = Math.max(1, options.attempts ?? DIRENV_RELEASE_DIGEST_FETCH_ATTEMPTS);
+  const retryDelayMs = options.retryDelayMs ?? DIRENV_RELEASE_DIGEST_RETRY_DELAY_MS;
+  let lastError;
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const release = await fetchDirenvReleaseMetadata(version);
+      const asset = release.assets?.find((candidate) => candidate.name === assetName);
+
+      if (!asset) {
+        throw new Error(`direnv release v${version} does not include asset ${assetName}`);
+      }
+
+      if (!asset.digest) {
+        throw new Error(`direnv release asset ${assetName} does not include a digest`);
+      }
+
+      return normalizeSha256Digest(asset.digest);
+    } catch (error) {
+      lastError = error;
+
+      if (!shouldRetryDirenvReleaseMetadataFetch(error) || attempt === attempts) {
+        throw error;
+      }
+
+      await waitForRetry(retryDelayMs);
+    }
   }
 
-  if (!asset.digest) {
-    throw new Error(`direnv release asset ${assetName} does not include a digest`);
-  }
-
-  return normalizeSha256Digest(asset.digest);
+  throw lastError;
 }
 
 async function verifyFileSha256(filePath, expectedDigest, assetName) {
@@ -92689,8 +92745,10 @@ var __webpack_exports__normalizeSha256Digest = __webpack_exports__.Xm;
 var __webpack_exports__parseRequiredEnvVarNames = __webpack_exports__.lR;
 var __webpack_exports__setMasks = __webpack_exports__.OY;
 var __webpack_exports__sha256File = __webpack_exports__.Q3;
+var __webpack_exports__shouldRetryDirenvReleaseMetadataFetch = __webpack_exports__.sw;
 var __webpack_exports__validateRequiredEnvVars = __webpack_exports__.r0;
 var __webpack_exports__verifyFileSha256 = __webpack_exports__.Z2;
-export { __webpack_exports__allowEnvrc as allowEnvrc, __webpack_exports__applyEnvVars as applyEnvVars, __webpack_exports__direnvBinaryAssetName as direnvBinaryAssetName, __webpack_exports__direnvBinaryURL as direnvBinaryURL, __webpack_exports__errorMessage as errorMessage, __webpack_exports__exportEnvrc as exportEnvrc, __webpack_exports__fetchDirenvReleaseAssetDigest as fetchDirenvReleaseAssetDigest, __webpack_exports__installTools as installTools, __webpack_exports__logExportedEnvVars as logExportedEnvVars, __webpack_exports__main as main, __webpack_exports__normalizeSha256Digest as normalizeSha256Digest, __webpack_exports__parseRequiredEnvVarNames as parseRequiredEnvVarNames, __webpack_exports__setMasks as setMasks, __webpack_exports__sha256File as sha256File, __webpack_exports__validateRequiredEnvVars as validateRequiredEnvVars, __webpack_exports__verifyFileSha256 as verifyFileSha256 };
+var __webpack_exports__waitForRetry = __webpack_exports__.fS;
+export { __webpack_exports__allowEnvrc as allowEnvrc, __webpack_exports__applyEnvVars as applyEnvVars, __webpack_exports__direnvBinaryAssetName as direnvBinaryAssetName, __webpack_exports__direnvBinaryURL as direnvBinaryURL, __webpack_exports__errorMessage as errorMessage, __webpack_exports__exportEnvrc as exportEnvrc, __webpack_exports__fetchDirenvReleaseAssetDigest as fetchDirenvReleaseAssetDigest, __webpack_exports__installTools as installTools, __webpack_exports__logExportedEnvVars as logExportedEnvVars, __webpack_exports__main as main, __webpack_exports__normalizeSha256Digest as normalizeSha256Digest, __webpack_exports__parseRequiredEnvVarNames as parseRequiredEnvVarNames, __webpack_exports__setMasks as setMasks, __webpack_exports__sha256File as sha256File, __webpack_exports__shouldRetryDirenvReleaseMetadataFetch as shouldRetryDirenvReleaseMetadataFetch, __webpack_exports__validateRequiredEnvVars as validateRequiredEnvVars, __webpack_exports__verifyFileSha256 as verifyFileSha256, __webpack_exports__waitForRetry as waitForRetry };
 
 //# sourceMappingURL=index.js.map
