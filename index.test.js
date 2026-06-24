@@ -193,6 +193,50 @@ describe('checksum verification', () => {
     await expect(fetchDirenvReleaseAssetDigest('2.37.1', 'direnv.linux-amd64')).rejects.toThrow(
       'Failed to fetch direnv release metadata for v2.37.1: HTTP 404'
     );
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  test('retries transient release metadata HTTP failures', async () => {
+    fetch
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          assets: [
+            {
+              name: 'direnv.linux-amd64',
+              digest: `sha256:${testBinaryDigest}`,
+            },
+          ],
+        }),
+      });
+
+    await expect(fetchDirenvReleaseAssetDigest('2.37.1', 'direnv.linux-amd64', { retryDelayMs: 0 })).resolves.toBe(testBinaryDigest);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  test('retries release metadata network errors', async () => {
+    fetch
+      .mockRejectedValueOnce(new Error('temporary network failure'))
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          assets: [
+            {
+              name: 'direnv.linux-amd64',
+              digest: `sha256:${testBinaryDigest}`,
+            },
+          ],
+        }),
+      });
+
+    await expect(fetchDirenvReleaseAssetDigest('2.37.1', 'direnv.linux-amd64', { retryDelayMs: 0 })).resolves.toBe(testBinaryDigest);
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 
   test('fails when the release asset is missing', async () => {
