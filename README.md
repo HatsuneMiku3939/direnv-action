@@ -41,10 +41,10 @@ No outputs
 
 ## Example usage
 
-Examples below pin the current release, `v1.3.7`. If you prefer compatible updates within the current major line, use the moving major tag `@v1`.
+Examples below pin the current release, `v1.4.0`. If you prefer compatible updates within the current major line, use the moving major tag `@v1`.
 
 ```yaml
-uses: HatsuneMiku3939/direnv-action@v1.3.7
+uses: HatsuneMiku3939/direnv-action@v1.4.0
 with:
   direnvVersion: 2.37.1
   masks: SECRET1, SECRET2
@@ -56,7 +56,7 @@ By default, cold installs verify the downloaded `direnv` binary against the GitH
 expected digest yourself, set `direnvChecksum` to either a plain SHA-256 hex digest or a `sha256:<digest>` value:
 
 ```yaml
-uses: HatsuneMiku3939/direnv-action@v1.3.7
+uses: HatsuneMiku3939/direnv-action@v1.4.0
 with:
   direnvVersion: 2.37.1
   direnvChecksum: sha256:1f1b93dd6f38523fde26dfac96151ef9d31a374e3005cd3345fb93555ae0c9b5
@@ -65,7 +65,7 @@ with:
 To evaluate the `.envrc` in a subdirectory, set `path` explicitly:
 
 ```yaml
-uses: HatsuneMiku3939/direnv-action@v1.3.7
+uses: HatsuneMiku3939/direnv-action@v1.4.0
 with:
   path: child
   masks: SECRET1, SECRET2
@@ -74,7 +74,7 @@ with:
 To fail early when expected variables are not exported, set `required`:
 
 ```yaml
-uses: HatsuneMiku3939/direnv-action@v1.3.7
+uses: HatsuneMiku3939/direnv-action@v1.4.0
 with:
   required: |
     AWS_REGION
@@ -82,7 +82,7 @@ with:
     NODE_AUTH_TOKEN
 ```
 
-For the most predictable builds, pin an exact version tag such as `@v1.3.7`. Use `@v1` only when you want to receive the latest compatible `v1.x.y` release automatically.
+For the most predictable builds, pin an exact version tag such as `@v1.4.0`. Use `@v1` only when you want to receive the latest compatible `v1.x.y` release automatically.
 
 ## Behavior notes
 
