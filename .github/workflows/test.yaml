@@ -11,7 +11,11 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-14]
+        include:
+          - os: ubuntu-latest
+            direnv-checksum: sha256:c0443e4600e4b93ec253e663fff18b5fb490cc555b1fc72f0ab22beaa2bb9810
+          - os: macos-14
+            direnv-checksum: sha256:dd053025ecae958118b3db2292721464e68da4fb319b80905a4cebba5ba9f069
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v7
@@ -27,6 +31,7 @@ jobs:
           DIRENV_ACTION_TEST
           CHILD_ENV
         direnvVersion: 2.32.3
+        direnvChecksum: ${{ matrix.direnv-checksum }}
         path: child
     - run: printenv | grep DIRENV_ACTION_TEST
     - run: echo $PATH | grep $(pwd)/bin
@@ -62,3 +67,20 @@ jobs:
       with:
         required: MISSING_REQUIRED_ENV
     - run: test "${{ steps.missing_required.outcome }}" = "failure"
+
+  test-checksum-mismatch:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-node@v6
+      with:
+        node-version: 24
+    - run: npm ci
+    - run: npm run prepare
+    - id: checksum_mismatch
+      uses: ./
+      continue-on-error: true
+      with:
+        direnvVersion: 2.32.3
+        direnvChecksum: sha256:0000000000000000000000000000000000000000000000000000000000000000
+    - run: test "${{ steps.checksum_mismatch.outcome }}" = "failure"

@@ -33,6 +33,7 @@ jobs:
         masks: SECRET1, SECRET2
         required: DIRENV_ACTION_TEST
         direnvVersion: 2.32.3
+        direnvChecksum: sha256:c0443e4600e4b93ec253e663fff18b5fb490cc555b1fc72f0ab22beaa2bb9810
     - run: printenv | grep DIRENV_ACTION_TEST
     - run: echo $PATH | grep $(pwd)/bin
     - run: printenv
