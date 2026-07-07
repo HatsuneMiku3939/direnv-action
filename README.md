@@ -1,6 +1,7 @@
 
 [![test](https://github.com/HatsuneMiku3939/direnv-action/actions/workflows/test.yaml/badge.svg)](https://github.com/HatsuneMiku3939/direnv-action/actions/workflows/test.yaml)
 [![CodeQL](https://github.com/HatsuneMiku3939/direnv-action/actions/workflows/codeql.yml/badge.svg)](https://github.com/HatsuneMiku3939/direnv-action/actions/workflows/codeql.yml)
+[![Dependents](https://dependents.info/HatsuneMiku3939/direnv-action/badge)](https://dependents.info/HatsuneMiku3939/direnv-action)
 
 
 # direnv action
@@ -12,6 +13,10 @@ evaluates the target `.envrc`, and exports the resulting environment variables
 to subsequent workflow steps.
 
 Documentation site: https://hatsunemiku3939.github.io/direnv-action/
+
+## Who uses this action
+
+[![Repositories that depend on direnv-action](https://dependents.info/HatsuneMiku3939/direnv-action/image)](https://dependents.info/HatsuneMiku3939/direnv-action)
 
 ## How it works
 

@@ -125,6 +125,24 @@
       box-shadow: 3px 3px 0 var(--ink);
     }
 
+    .masthead-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      align-items: flex-end;
+    }
+
+    .dependents-badge {
+      display: inline-block;
+      line-height: 0;
+    }
+
+    .dependents-badge img {
+      display: block;
+      height: 20px;
+      max-width: 100%;
+    }
+
     .terminal-strip {
       display: grid;
       grid-template-columns: 1.05fr 0.95fr;
@@ -353,6 +371,15 @@
       background: #f6ddd7;
     }
 
+    .dependents-image {
+      display: block;
+      width: min(100%, 688px);
+      height: auto;
+      margin-top: 16px;
+      border: 1px solid var(--rule-dark);
+      background: var(--code-paper);
+    }
+
     ul {
       max-width: 78ch;
       margin: 10px 0 0;
@@ -389,6 +416,10 @@
 
       .repo-link {
         width: max-content;
+      }
+
+      .masthead-actions {
+        align-items: flex-start;
       }
 
       nav {
@@ -443,7 +474,12 @@
             and carrying those variables into later workflow steps.
           </p>
         </div>
-        <a class="repo-link" href="https://github.com/HatsuneMiku3939/direnv-action">Repository</a>
+        <div class="masthead-actions">
+          <a class="repo-link" href="https://github.com/HatsuneMiku3939/direnv-action">Repository</a>
+          <a class="dependents-badge" href="https://dependents.info/HatsuneMiku3939/direnv-action" aria-label="View direnv-action dependents">
+            <img src="https://dependents.info/HatsuneMiku3939/direnv-action/badge" alt="GitHub network dependents">
+          </a>
+        </div>
       </div>
 
       <div class="terminal-strip">
@@ -487,6 +523,7 @@ $ mask secrets
   <div class="page layout">
     <nav aria-label="Page sections">
       <a href="#quick-start">Quick start</a>
+      <a href="#who-uses">Who uses this action</a>
       <a href="#inputs">Inputs</a>
       <a href="#examples">Examples</a>
       <a href="#troubleshooting">Troubleshooting</a>
@@ -514,6 +551,17 @@ $ mask secrets
         <div class="callout">
           This action logs exported variable names for debugging, but it does not print environment variable values.
         </div>
+      </section>
+
+      <section id="who-uses">
+        <span class="section-kicker">Dependency graph</span>
+        <h2>Who uses this action</h2>
+        <p>
+          dependents.info renders public GitHub dependency graph dependents for this repository.
+        </p>
+        <a href="https://dependents.info/HatsuneMiku3939/direnv-action">
+          <img class="dependents-image" src="https://dependents.info/HatsuneMiku3939/direnv-action/image" alt="Repositories that depend on direnv-action">
+        </a>
       </section>
 
       <section id="inputs">
