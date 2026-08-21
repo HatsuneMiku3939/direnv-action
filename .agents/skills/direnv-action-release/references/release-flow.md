@@ -76,6 +76,10 @@ Use this checklist after reading `RELEASE_RUNBOOK.md`.
     already targets the intended release, continue. If it targets a strictly
     newer compatible immutable release, retain it and continue. Hold on any
     other target. Otherwise move it with
-    `--force-with-lease=refs/tags/v1:<expected-raw-tag-object>` and verify the
-    default branch, immutable tag, `v1`, and Release together.
-12. Clean the merged release worktree and local branch without force deletion.
+    `--force-with-lease=refs/tags/v1:<expected-raw-tag-object>`.
+12. After a compare-and-swap or newer-target retention, read the remote
+    `master`, raw and peeled `v1`, and matching immutable version refs again.
+    Require exactly one compatible `v1.x.y` tag at the peeled target, prove its
+    SemVer is at least the intended version and its commit is on `master`, then
+    read back that tag's non-draft, non-prerelease GitHub Release.
+13. Clean the merged release worktree and local branch without force deletion.

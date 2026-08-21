@@ -21,7 +21,9 @@
   advances it to a strictly newer compatible immutable release, retain that
   target; hold on any other unexpected target.
 - Verify `v1` resolves to the intended release commit or a strictly newer
-  compatible immutable release before finishing.
+  compatible immutable release before finishing. Use fresh remote raw and
+  peeled refs, not a local `v1`; require one matching immutable version tag,
+  `master` ancestry, and a non-draft, non-prerelease GitHub Release.
 - If pushing to `master` shows a branch-rule warning but the push succeeds, report that explicitly.
 - Never delete an immutable tag or GitHub Release automatically after a partial
   failure. Report the last verified state and stop.

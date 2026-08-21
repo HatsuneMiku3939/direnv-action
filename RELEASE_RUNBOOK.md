@@ -240,15 +240,38 @@ Expected result:
      origin refs/tags/v1
    ```
 
-3. Verify that both tags now point to the same commit. In the automatic-flow
-   concurrency case, verify instead that `v1` points to a strictly newer
-   compatible immutable tag with a matching GitHub Release:
+3. Read the remote refs again after the compare-and-swap. Do not use a possibly
+   stale local `v1` for final verification:
 
    ```bash
-   git rev-list -n 1 <next-version-tag>
-   git rev-list -n 1 v1
-   gh release view <next-version-tag>
+   git ls-remote origin \
+     refs/heads/master \
+     refs/tags/v1 \
+     'refs/tags/v1^{}' \
+     'refs/tags/v1.*' \
+     'refs/tags/v1.*^{}'
    ```
+
+4. Resolve the fresh peeled `v1` target to exactly one immutable `v1.x.y` tag.
+   Require the version to equal `<next-version-tag>` or, only for the automatic
+   concurrency path, to be a strictly newer compatible version. Fetch that
+   exact tag, prove its commit is an ancestor of remote `master`, and verify its
+   published Release:
+
+   ```bash
+   git fetch origin \
+     refs/heads/master:refs/remotes/origin/master \
+     refs/tags/<actual-version>:refs/tags/<actual-version>
+   git merge-base --is-ancestor \
+     "refs/tags/<actual-version>^{}" \
+     origin/master
+   gh release view <actual-version> \
+     --json tagName,isDraft,isPrerelease,url
+   ```
+
+   Require `isDraft=false` and `isPrerelease=false`. Hold if the peeled target
+   has zero or multiple immutable version tags, the SemVer or ancestry check
+   fails, or the matching GitHub Release cannot be proven.
 
 Expected result:
 - `v1` points to the newest compatible release commit.

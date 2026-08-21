@@ -55,4 +55,6 @@ conflicts, or a required gate cannot be proven current.
 - reviewer findings and exact-head GitHub CI;
 - release PR merge commit and parent relationship;
 - peeled `origin/master`, immutable tag, and `v1` targets plus the raw `v1` tag
-  object and GitHub Release read-back.
+  object and GitHub Release read-back. Final `v1` evidence must come from fresh
+  remote refs and map to exactly one compatible immutable version tag on
+  `master` with a non-draft, non-prerelease Release.
