@@ -18,11 +18,15 @@ Use this checklist after reading `RELEASE_RUNBOOK.md`.
    - `git log <last-release-tag>..HEAD --oneline`
 4. Apply the next version:
    - `npm version <next-version> --no-git-tag-version`
-5. Update docs that pin the release tag, including `README.md` and `docs/index.html`, then rerun:
+5. Regenerate the distributable, update docs that pin the release tag, including
+   `README.md` and `docs/index.html`, then rerun:
+   - `npm run prepare`
    - `npm run all`
 6. Commit and publish:
    - `git add package.json package-lock.json README.md docs/index.html dist`
    - `git commit -m "chore(release): prepare <next-version-tag>"`
+   - `npm run prepare`
+   - require `git status --porcelain` to be empty
    - `git push origin master`
 7. Tag and release:
    - `git tag -a <next-version-tag> -m "Release <next-version-tag>"`
@@ -53,6 +57,7 @@ Use this checklist after reading `RELEASE_RUNBOOK.md`.
    - `npm run all`
    - `npm version <next-version> --no-git-tag-version`
    - update `README.md` and `docs/index.html`
+   - `npm run prepare`
    - `npm run all`
    - `npm audit`
    - `npm audit --omit=dev`
@@ -61,6 +66,7 @@ Use this checklist after reading `RELEASE_RUNBOOK.md`.
    - stage only `package.json`, `package-lock.json`, `README.md`,
      `docs/index.html`, and expected regenerated `dist` files;
    - commit `chore(release): prepare <next-version-tag>`;
+   - run `npm run prepare` again and require `git status --porcelain` to be empty;
    - re-check the source branch ref, then push the release branch.
 5. Open a non-draft PR with the required repository body sections and
    `Created by Codex`; apply the appropriate release or maintenance label.

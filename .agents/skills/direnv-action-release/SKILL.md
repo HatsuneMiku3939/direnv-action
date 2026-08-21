@@ -27,7 +27,8 @@ consistent while preserving the caller's write authority.
 - Never infer release authority from a merged dependency PR, changed `dist`, or
   skill invocation alone.
 - Stop automatic publication for minor, major, breaking, unclassified, or
-  medium/high-risk release sets.
+  high-risk release sets. Permit a fully classified low/medium-risk set only
+  when the trusted operator prompt explicitly authorizes medium-risk release.
 - Honor newer constraints such as `read only` or `do not release`.
 
 ## Select the Flow
@@ -41,16 +42,20 @@ operator path only.
 ### Authorized automatic patch release
 
 1. Confirm the verified dependency merge and classify every commit after the
-   latest immutable version tag.
+   latest immutable version tag. Require every commit to be low or explicitly
+   authorized medium risk; high-risk signals take precedence.
 2. Return `release_not_required` or `release_held` when the eligibility reference
    requires it.
 3. Detect an existing matching release branch, PR, tag, or GitHub Release before
    creating anything.
 4. Prepare the next patch version in a dedicated `release/v1.x.y` worktree.
 5. Update version files, `README.md`, and `docs/index.html`; run `nvm use`,
-   `npm ci`, `npm run all`, full and production audits, and diff checks.
-6. Commit and open a non-draft release-preparation PR using the repository PR
-   body contract. Run the standard reviewer procedure and wait for current CI.
+   `npm ci`, mandatory `npm run prepare`, `npm run all`, full and production
+   audits, and diff checks.
+6. Commit the release preparation, run `npm run prepare` again, and require the
+   complete working tree to remain clean before pushing. Open a non-draft PR
+   using the repository PR body contract, run the standard reviewer procedure,
+   and wait for current CI.
 7. Re-check the exact release PR head before merge, use a merge commit, and
    verify the merge read-back.
 8. Publish the annotated immutable tag and GitHub Release from the exact release
