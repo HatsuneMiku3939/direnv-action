@@ -28,7 +28,9 @@ releases for versioned tags (for example, `v1.1.4`) and the moving major tag
    merged through a reviewed PR.
 3. A versioned tag such as `v1.1.4` is created from the verified release commit
    on `master` after validation.
-4. The moving major tag `v1` is force-updated to the same release commit after the versioned tag is pushed.
+4. The moving major tag `v1` is compare-and-swap updated to the same release
+   commit after the versioned tag is pushed. An automatic flow retains a
+   concurrently published strictly newer compatible immutable release.
 
 ## Legacy Cleanup
 
@@ -61,7 +63,10 @@ release write set. A successful dependency merge alone is not authorization.
    the latest immutable version tag.
 2. Require the complete release set to be patch-safe and to change a shipped
    runtime surface. Dev-only dependency, lint, test, CI, and docs-only sets are a
-   no-op. Hold on unclassified, medium/high-risk, breaking, or ambiguous sets.
+   no-op only when runtime artifacts remain unchanged. Classify source changes
+   before generated effects: hold when a dev-only tool regenerates `dist/**`,
+   when a bundler or releaser appears, or when the set is unclassified,
+   medium/high-risk, breaking, or ambiguous.
 3. Confirm the next patch version has no conflicting local or remote branch,
    release PR, immutable tag, or GitHub Release.
 4. Create `release/<next-version-tag>` from exact `origin/master` in a dedicated
@@ -102,7 +107,10 @@ release write set. A successful dependency merge alone is not authorization.
    before merge, re-check base, head, CI, release-set eligibility, and version
    collisions. Merge with a merge commit.
 8. Read back the release merge and require `origin/master` to equal that exact
-   merge commit. Continue with Phase 2 and Phase 3 from that commit.
+   merge commit. Continue with Phase 2 and Phase 3 from that commit. Before
+   moving `v1`, record and re-check its raw remote tag-object OID and peeled
+   target. Use a raw-OID compare-and-swap, retain a strictly newer compatible
+   release target, and hold on any other unexpected target.
 9. If any write partially succeeds, report the last verified state and stop.
    Never delete an immutable tag or GitHub Release automatically, undo the
    dependency merge, or repeat a successful write blindly.
@@ -216,19 +224,25 @@ Expected result:
 
 ## Phase 3: Move the `v1` major tag to the new release commit
 
-1. Update the local `v1` tag to the same release commit:
+1. Record the current raw remote `v1` tag-object OID, then update the local tag
+   to the same release commit:
 
    ```bash
+   expected_v1_object="$(git ls-remote origin refs/tags/v1 | awk '{print $1}')"
    git tag -fa v1 -m "Update v1 to <next-version-tag>"
    ```
 
-2. Force-push the updated `v1` tag:
+2. Compare-and-swap the updated `v1` tag:
 
    ```bash
-   git push origin refs/tags/v1 --force
+   git push \
+     --force-with-lease=refs/tags/v1:"${expected_v1_object}" \
+     origin refs/tags/v1
    ```
 
-3. Verify that both tags now point to the same commit:
+3. Verify that both tags now point to the same commit. In the automatic-flow
+   concurrency case, verify instead that `v1` points to a strictly newer
+   compatible immutable tag with a matching GitHub Release:
 
    ```bash
    git rev-list -n 1 <next-version-tag>
@@ -251,7 +265,7 @@ Expected result:
 - [ ] Generated `dist` and version files committed and pushed to `master`.
 - [ ] New version tag created from `master`.
 - [ ] Version tag pushed to remote.
-- [ ] `v1` tag force-updated to the same release commit.
+- [ ] `v1` retained on a strictly newer compatible release or compare-and-swap updated to the release commit.
 - [ ] `v1` tag push verified.
 
 ## Safety Notes
@@ -263,6 +277,9 @@ Expected result:
 - Do not update only one release-facing document when both `README.md` and `docs/index.html` pin the latest exact release tag.
 - Do not recreate the old `v1` branch after migration; `v1` should remain a tag only.
 - Force-updating `v1` changes what `@v1` resolves to, so confirm the target commit before pushing.
+- Never update `v1` with an unconditional force push. Compare the raw remote tag
+  object with `--force-with-lease`; retain a concurrently published strictly
+  newer compatible release and hold on every other unexpected target.
 - If the repository enables immutable release or tag policies, verify that moving `v1` is still allowed before starting the release.
 - Detect and reuse an exact in-progress release preparation; stop on conflicting
   branches, PRs, tags, or Releases instead of overwriting them.

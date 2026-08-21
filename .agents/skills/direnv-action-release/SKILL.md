@@ -54,7 +54,9 @@ operator path only.
 7. Re-check the exact release PR head before merge, use a merge commit, and
    verify the merge read-back.
 8. Publish the annotated immutable tag and GitHub Release from the exact release
-   merge commit, then move `v1` and verify all peeled targets.
+   merge commit. Move `v1` with a raw tag-object compare-and-swap, retaining a
+   concurrently published strictly newer compatible target, then verify all
+   refs and the Release.
 
 Re-check the relevant remote ref, PR head, tag, or Release immediately before
 every external write. On a partial failure, report the last verified state and
@@ -70,6 +72,7 @@ Report:
 - the release-preparation commit SHA
 - the release-preparation PR and exact merge commit when that flow is used
 - the version tag and GitHub Release URL
-- whether `v1` now points to the same commit
+- whether `v1` points to the release commit or a verified strictly newer
+  compatible immutable release
 - the terminal state: `release_not_required`, `release_held`,
   `release_prepared`, `release_published`, or `release_partial_failure`

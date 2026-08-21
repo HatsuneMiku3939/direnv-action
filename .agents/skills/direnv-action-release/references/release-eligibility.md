@@ -12,14 +12,18 @@ Dependabot merge. Do not use it to broaden the Dependabot merge-risk policy.
   PR or an already verified release-safe commit.
 - The complete release set is patch SemVer: no breaking change, new input/output,
   behavior contract expansion, or required migration.
-- The set changes a shipped runtime surface: `dist/**`, `action.yml`, a production
-  dependency included in `dist`, or a runtime security fix delivered by a tag.
+- The set changes a shipped runtime surface because of a source, `action.yml`,
+  production-dependency, or runtime-security change. Generated `dist/**` is
+  evidence of that source change, not an independent reason to release.
 - No install script, maintainer/releaser warning, auth/proxy/network/request-path
   change, unexpected generated artifact, or failing gate exists.
 
-Return `release_not_required` when changes are limited to dev-only lockfile,
-lint, test, CI, or documentation updates and committed runtime artifacts are
-unchanged.
+Classify the cause before generated effects. Return `release_not_required` when
+changes are limited to dev-only lockfile, lint, test, CI, or documentation
+updates and committed runtime artifacts are unchanged. Return `release_held`
+when a dev-only tool change regenerates `dist/**`, or when a bundler or releaser
+change appears anywhere in the release set; do not treat generated output as a
+way around the original risk boundary.
 
 Return `release_held` when any commit is unclassified, the release set includes a
 medium/high-risk change, patch SemVer is uncertain, a matching release artifact
@@ -34,6 +38,11 @@ conflicts, or a required gate cannot be proven current.
   intended branch and version.
 - Reuse an exact in-progress preparation. Hold on any conflicting branch, PR,
   tag, or Release; never overwrite it.
+- Before moving `v1`, record both its raw remote tag-object OID and peeled target.
+  Treat an exact intended target as complete, retain a strictly newer compatible
+  immutable tag with a matching GitHub Release, and hold on any other target.
+  Update only with a raw-OID `--force-with-lease`; never use an unconditional
+  force push.
 
 ## Required evidence
 
@@ -45,5 +54,5 @@ conflicts, or a required gate cannot be proven current.
 - expected file set for the release preparation;
 - reviewer findings and exact-head GitHub CI;
 - release PR merge commit and parent relationship;
-- peeled `origin/master`, immutable tag, and `v1` targets plus GitHub Release
-  read-back.
+- peeled `origin/master`, immutable tag, and `v1` targets plus the raw `v1` tag
+  object and GitHub Release read-back.

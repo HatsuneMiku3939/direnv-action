@@ -29,8 +29,10 @@ Use this checklist after reading `RELEASE_RUNBOOK.md`.
    - `git push origin <next-version-tag>`
    - `gh release create <next-version-tag> --title "<next-version-tag>" --generate-notes`
 8. Move the major tag:
+   - record the current raw remote tag-object OID with
+     `git ls-remote origin refs/tags/v1`
    - `git tag -fa v1 -m "Update v1 to <next-version-tag>"`
-   - `git push origin refs/tags/v1 --force`
+   - `git push --force-with-lease=refs/tags/v1:<expected-raw-tag-object> origin refs/tags/v1`
 9. Verify:
    - `git rev-list -n 1 <next-version-tag>`
    - `git rev-list -n 1 v1`
@@ -70,6 +72,10 @@ Use this checklist after reading `RELEASE_RUNBOOK.md`.
 9. Require `origin/master` to equal the exact release merge commit before
    creating the annotated immutable tag.
 10. Re-check tag absence, push the immutable tag, and create the GitHub Release.
-11. Re-check the old remote `v1` peeled target, move it to the release commit,
-    and verify default branch, immutable tag, `v1`, and Release together.
+11. Re-check the old remote `v1` raw tag-object OID and peeled target. If it
+    already targets the intended release, continue. If it targets a strictly
+    newer compatible immutable release, retain it and continue. Hold on any
+    other target. Otherwise move it with
+    `--force-with-lease=refs/tags/v1:<expected-raw-tag-object>` and verify the
+    default branch, immutable tag, `v1`, and Release together.
 12. Clean the merged release worktree and local branch without force deletion.
