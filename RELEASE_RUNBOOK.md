@@ -61,6 +61,22 @@ Expected result:
 Use this path only when a trusted operator prompt explicitly authorizes the full
 release write set. A successful dependency merge alone is not authorization.
 
+Risk classification is part of the required handoff:
+
+- medium risk includes a direct dev dependency with extra attributable
+  transitive churn, a non-high-risk security fix with notable subtree changes,
+  a fully attributable grouped dev update, or a dev bundler/build-tool update
+  with expected reproducible artifacts;
+- high risk includes a major update, runtime dependency, install script,
+  maintainer/releaser change, auth/proxy/network/request-path library,
+  unexpected generated artifact, breaking change, or ambiguous surface; and
+- any high-risk signal takes precedence over a medium-risk shape.
+
+An unattended medium-risk merge must provide upstream metadata and release-note
+review, complete diff and artifact attribution, exact merged-head clean-build
+evidence, no unresolved reviewer findings, and current exact-head CI. The
+release workflow consumes this evidence and holds when it is incomplete or stale.
+
 1. Verify the dependency PR's exact-head merge and inventory every commit after
    the latest immutable version tag.
 2. Require every commit in the complete release set to be classified low or
@@ -82,6 +98,7 @@ release write set. A successful dependency merge alone is not authorization.
    nvm use
    npm ci
    npm run all
+   test -z "$(git status --porcelain)"
    npm version <next-version> --no-git-tag-version
    npm run prepare
    npm run all
@@ -145,6 +162,7 @@ path explicitly references a phase.
    nvm use
    npm ci
    npm run all
+   test -z "$(git status --porcelain)"
    ```
 
 3. Check the latest release tags:
@@ -180,6 +198,8 @@ path explicitly references a phase.
    ```bash
    npm run prepare
    npm run all
+   npm audit
+   npm audit --omit=dev
    ```
 
 8. Update documentation that references the latest pinned release version.
@@ -301,10 +321,12 @@ Expected result:
 ## Operational Checklist
 
 - [ ] `master` updated with `npm run all` success.
+- [ ] Baseline install and build left the exact source tree clean before the version change.
 - [ ] Automatic patch flows classified the entire release set and used a reviewed release-preparation PR.
 - [ ] Release version determined and applied if needed.
 - [ ] `dist/**` explicitly regenerated after the release version change.
 - [ ] Post-commit `npm run prepare` left the complete working tree clean.
+- [ ] Full and production npm audits passed.
 - [ ] `README.md` and `docs/index.html` updated for the latest pinned release version where applicable.
 - [ ] Generated `dist` and version files committed and pushed to `master`.
 - [ ] New version tag created from `master`.

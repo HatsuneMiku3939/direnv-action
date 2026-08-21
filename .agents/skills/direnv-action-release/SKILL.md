@@ -43,7 +43,8 @@ operator path only.
 
 1. Confirm the verified dependency merge and classify every commit after the
    latest immutable version tag. Require every commit to be low or explicitly
-   authorized medium risk; high-risk signals take precedence.
+   authorized medium risk; high-risk signals take precedence. Require the
+   medium-risk evidence defined by the eligibility reference.
 2. Return `release_not_required` or `release_held` when the eligibility reference
    requires it.
 3. Detect an existing matching release branch, PR, tag, or GitHub Release before

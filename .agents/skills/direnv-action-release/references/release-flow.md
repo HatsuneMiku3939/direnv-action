@@ -12,6 +12,7 @@ Use this checklist after reading `RELEASE_RUNBOOK.md`.
    - `nvm use`
    - `npm ci`
    - `npm run all`
+   - require `git status --porcelain` to be empty
 3. Inspect version state:
    - `git tag --sort=-version:refname | head -n 5`
    - `grep '"version":' package.json`
@@ -22,6 +23,8 @@ Use this checklist after reading `RELEASE_RUNBOOK.md`.
    `README.md` and `docs/index.html`, then rerun:
    - `npm run prepare`
    - `npm run all`
+   - `npm audit`
+   - `npm audit --omit=dev`
 6. Commit and publish:
    - `git add package.json package-lock.json README.md docs/index.html dist`
    - `git commit -m "chore(release): prepare <next-version-tag>"`
@@ -55,6 +58,7 @@ Use this checklist after reading `RELEASE_RUNBOOK.md`.
 3. Prepare from exact `origin/master` in a dedicated worktree:
    - `npm ci`
    - `npm run all`
+   - require `git status --porcelain` to be empty before changing the version
    - `npm version <next-version> --no-git-tag-version`
    - update `README.md` and `docs/index.html`
    - `npm run prepare`

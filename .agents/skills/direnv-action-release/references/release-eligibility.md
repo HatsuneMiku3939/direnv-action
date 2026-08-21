@@ -3,10 +3,29 @@
 Use this contract only for a trusted automatic handoff after a verified
 Dependabot merge. Do not use it to broaden the Dependabot merge-risk policy.
 
+## Require a verified risk handoff
+
+Consume the classification produced by `dependabot-pr-maintainer`; do not infer
+an easier class from release impact:
+
+- medium risk includes a direct dev dependency with extra attributable
+  transitive churn, a non-high-risk security fix with notable subtree changes,
+  a fully attributable grouped dev update, or a dev bundler/build-tool update
+  with expected reproducible artifacts;
+- high risk includes a major update, runtime dependency, install script,
+  maintainer/releaser change, auth/proxy/network/request-path library,
+  unexpected generated artifact, breaking change, or ambiguous surface; and
+- any high-risk signal takes precedence over a medium-risk shape.
+
+For a medium-risk handoff, require upstream metadata and release-note review,
+complete diff and artifact attribution, exact merged-head clean-build evidence,
+no unresolved reviewer findings, and current exact-head CI. Hold when this
+evidence is incomplete or stale.
+
 ## Require all conditions
 
 - The original PR was merged inside its authorized unattended low/medium-risk
-  boundary.
+  boundary and carries the required classification evidence.
 - Merge read-back proves the verified PR head is a parent of the merge commit.
 - The latest immutable version tag and its peeled commit are unambiguous.
 - Every commit after that tag through the verified merge commit maps to a reviewed
