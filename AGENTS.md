@@ -50,5 +50,7 @@ This repository contains a JavaScript-based GitHub Action that installs `direnv`
 - An explicitly requested manual release may push directly to `master` after all
   gates in the release runbook pass. An automatic patch-release handoff must use
   a dedicated release-preparation branch and reviewed PR; it must never bypass
-  the branch rule with a direct `master` push. For other changes, use feature
-  branches and PRs with appropriate reviews.
+  the branch rule with a direct `master` push. Every release must explicitly
+  regenerate `dist/` after the version change and prove a post-commit rebuild
+  leaves the working tree clean. For other changes, use feature branches and PRs
+  with appropriate reviews.

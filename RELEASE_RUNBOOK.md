@@ -7,6 +7,8 @@ releases for versioned tags (for example, `v1.1.4`) and the moving major tag
 ## Scope
 
 - Keep `master` as the source of truth for release-ready code and generated `dist` artifacts.
+- Regenerate `dist/**` after every release version change and prove the committed
+  bundle is reproducible before publishing.
 - Publish a new versioned release tag from `master`.
 - Move the `v1` major tag to the newest compatible release commit.
 - Prepare unattended patch releases through a release-preparation PR; do not use
@@ -59,31 +61,55 @@ Expected result:
 Use this path only when a trusted operator prompt explicitly authorizes the full
 release write set. A successful dependency merge alone is not authorization.
 
+Risk classification is part of the required handoff:
+
+- medium risk includes a direct dev dependency with extra attributable
+  transitive churn, a non-high-risk security fix with notable subtree changes,
+  a fully attributable grouped dev update, or a dev bundler/build-tool update
+  with expected reproducible artifacts;
+- high risk includes a major update, runtime dependency, install script,
+  maintainer/releaser change, auth/proxy/network/request-path library,
+  unexpected generated artifact, breaking change, or ambiguous surface; and
+- any high-risk signal takes precedence over a medium-risk shape.
+
+An unattended medium-risk merge must provide upstream metadata and release-note
+review, complete diff and artifact attribution, exact merged-head clean-build
+evidence, no unresolved reviewer findings, and current exact-head CI. The
+release workflow consumes this evidence and holds when it is incomplete or stale.
+
 1. Verify the dependency PR's exact-head merge and inventory every commit after
    the latest immutable version tag.
-2. Require the complete release set to be patch-safe and to change a shipped
-   runtime surface. Dev-only dependency, lint, test, CI, and docs-only sets are a
-   no-op only when runtime artifacts remain unchanged. Classify source changes
-   before generated effects: hold when a dev-only tool regenerates `dist/**`,
-   when a bundler or releaser appears, or when the set is unclassified,
-   medium/high-risk, breaking, or ambiguous.
+2. Require every commit in the complete release set to be classified low or
+   explicitly authorized medium risk and require the set to be patch-safe.
+   High-risk signals take precedence. Dev-only dependency, lint, test, CI, and
+   docs-only sets are a no-op when runtime artifacts remain unchanged. An
+   authorized medium-risk dev bundler may qualify when its `dist/**` changes are
+   expected, attributable, and reproducible. Hold on releaser, high-risk,
+   unclassified, breaking, ambiguous, unexpected, or non-reproducible changes.
 3. Confirm the next patch version has no conflicting local or remote branch,
    release PR, immutable tag, or GitHub Release.
 4. Create `release/<next-version-tag>` from exact `origin/master` in a dedicated
-   worktree. Apply the version and documentation updates described in Phase 1.
-5. Run both pre-change and post-change validation, including:
+   worktree.
+5. Run the baseline gate, apply the version and documentation updates described
+   in Phase 1, explicitly regenerate `dist/**`, and run the post-change gates in
+   this order:
 
    ```bash
    nvm use
    npm ci
+   npm run all
+   test -z "$(git status --porcelain)"
+   npm version <next-version> --no-git-tag-version
+   npm run prepare
    npm run all
    npm audit
    npm audit --omit=dev
    git diff --check
    ```
 
-6. Commit `chore(release): prepare <next-version-tag>`, push only the release
-   branch, and open a non-draft PR with the repository-required body:
+6. Commit `chore(release): prepare <next-version-tag>`, run `npm run prepare`
+   again, and require `git status --porcelain` to be empty. Only then push the
+   release branch and open a non-draft PR with the repository-required body:
 
    ```markdown
    ## Summary
@@ -136,6 +162,7 @@ path explicitly references a phase.
    nvm use
    npm ci
    npm run all
+   test -z "$(git status --porcelain)"
    ```
 
 3. Check the latest release tags:
@@ -165,10 +192,14 @@ path explicitly references a phase.
    Note:
    - `npm version` usually updates both `package.json` and `package-lock.json`.
 
-7. Rebuild and rerun the full validation gate after the version update:
+7. Explicitly regenerate `dist/**`, then rerun the full validation gate after
+   the version update:
 
    ```bash
+   npm run prepare
    npm run all
+   npm audit
+   npm audit --omit=dev
    ```
 
 8. Update documentation that references the latest pinned release version.
@@ -184,7 +215,15 @@ path explicitly references a phase.
    git commit -m "chore(release): prepare <next-version-tag>"
    ```
 
-10. In the manual operator flow, push the release preparation commit to `master`:
+10. Regenerate `dist/**` from the committed release state and require no
+    uncommitted change:
+
+    ```bash
+    npm run prepare
+    test -z "$(git status --porcelain)"
+    ```
+
+11. In the manual operator flow, push the release preparation commit to `master`:
 
    ```bash
    git push origin master
@@ -282,8 +321,12 @@ Expected result:
 ## Operational Checklist
 
 - [ ] `master` updated with `npm run all` success.
+- [ ] Baseline install and build left the exact source tree clean before the version change.
 - [ ] Automatic patch flows classified the entire release set and used a reviewed release-preparation PR.
 - [ ] Release version determined and applied if needed.
+- [ ] `dist/**` explicitly regenerated after the release version change.
+- [ ] Post-commit `npm run prepare` left the complete working tree clean.
+- [ ] Full and production npm audits passed.
 - [ ] `README.md` and `docs/index.html` updated for the latest pinned release version where applicable.
 - [ ] Generated `dist` and version files committed and pushed to `master`.
 - [ ] New version tag created from `master`.
@@ -296,6 +339,8 @@ Expected result:
 - Do not create the release tag from an outdated local checkout.
 - Do not use the manual direct-`master` path from an automatic webhook handoff.
 - Do not infer automatic release authority from a merged dependency PR.
+- Do not publish any release without explicitly regenerating `dist/**` after the
+  version change and proving the post-commit rebuild is clean.
 - Do not skip the second `npm run all` after `npm version`; the generated artifacts and lockfile must match the release version.
 - Do not update only one release-facing document when both `README.md` and `docs/index.html` pin the latest exact release tag.
 - Do not recreate the old `v1` branch after migration; `v1` should remain a tag only.

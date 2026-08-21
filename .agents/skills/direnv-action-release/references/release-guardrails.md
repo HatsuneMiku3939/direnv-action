@@ -5,12 +5,17 @@
   handoff must use a dedicated release-preparation PR.
 - Use the Node version from `.nvmrc`.
 - Classify every commit since the latest immutable version tag before automatic
-  patch preparation. Hold on unclassified or non-patch-safe commits.
-- Classify the source change before generated `dist/**`. A dev-only tool must not
-  become release-eligible merely because it regenerates committed artifacts;
-  bundler and releaser changes always hold the automatic path.
-- Always run `npm run all` after the version bump.
-- Do not hand-edit `dist/`; regenerate it through `npm run prepare` as part of `npm run all`.
+  patch preparation. Require low or explicitly authorized medium risk and hold
+  on high-risk, unclassified, or non-patch-safe commits.
+- Require the exact merged dependency head to remain clean after its baseline
+  install and full build before applying a release version change.
+- Classify the source change before generated `dist/**`. An explicitly authorized
+  medium-risk dev bundler may qualify only when its artifacts are expected,
+  attributable, and reproducible. Releaser changes always hold.
+- Always run `npm run prepare` explicitly after the version bump, then run
+  `npm run all` and both full and production audits.
+- Do not hand-edit `dist/`. After the release-preparation commit, regenerate it
+  again with `npm run prepare` and require the complete working tree to be clean.
 - Update both `README.md` and `docs/index.html` when they pin the latest exact release tag.
 - Use a Conventional Commit message for the release-preparation commit.
 - Detect existing release branches, PRs, tags, and Releases before every create;
