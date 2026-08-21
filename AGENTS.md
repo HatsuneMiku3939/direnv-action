@@ -15,7 +15,7 @@ This repository contains a JavaScript-based GitHub Action that installs `direnv`
 ├── package.json               # npm scripts and dependency definitions
 ├── eslint.config.js           # ESLint flat config
 ├── README.md                  # Usage, behavior, security, and development notes
-└── RELEASE_RUNBOOK.md         # Manual release process documentation
+└── RELEASE_RUNBOOK.md         # Manual and authorized automatic patch release process
 ```
 
 ## Core Behaviors & Patterns
@@ -47,4 +47,8 @@ This repository contains a JavaScript-based GitHub Action that installs `direnv`
 - For release work, prefer the repo skill at `.agents/skills/direnv-action-release/` and keep its references aligned with `RELEASE_RUNBOOK.md`.
 - Do not introduce unsupported platform/arch mappings without matching implementation and tests.
 - > TODO: Confirm branch protection, PR label policy, and required CI checks from repository settings.
-- You can push directly to `master` while in release process, but ensure all tests pass and the release runbook is followed for version bumps and changelog updates. For non-release changes, use feature branches and PRs with appropriate reviews.
+- An explicitly requested manual release may push directly to `master` after all
+  gates in the release runbook pass. An automatic patch-release handoff must use
+  a dedicated release-preparation branch and reviewed PR; it must never bypass
+  the branch rule with a direct `master` push. For other changes, use feature
+  branches and PRs with appropriate reviews.
