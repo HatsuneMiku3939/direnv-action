@@ -6,6 +6,9 @@ on:
       - master
       - main
 
+permissions:
+  contents: read
+
 jobs:
   check-dirty:
     runs-on: ubuntu-latest
