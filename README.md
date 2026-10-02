@@ -129,7 +129,7 @@ npm run lint
 npm test
 ```
 
-For release preparation, use the full gate so the generated `dist/` artifacts stay in sync:
+For dependency updates and release preparation, use the full gate and commit the regenerated `dist/` artifacts so the action runs the reviewed dependency versions:
 
 ```bash
 npm run all
