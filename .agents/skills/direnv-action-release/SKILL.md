@@ -26,9 +26,11 @@ consistent while preserving the caller's write authority.
   patch tag, GitHub Release, and moving `v1` update.
 - Never infer release authority from a merged dependency PR, changed `dist`, or
   skill invocation alone.
-- Stop automatic publication for minor, major, breaking, unclassified, or
-  high-risk release sets. Permit a fully classified low/medium-risk set only
-  when the trusted operator prompt explicitly authorizes medium-risk release.
+- Stop automatic publication for minor, major, breaking, or unclassified
+  release sets. Permit a fully classified low/medium-risk set or the narrow
+  A-stage high-risk dependency exception only when the trusted operator prompt
+  explicitly authorizes that release class and all eligibility evidence passes.
+  Keep A-stage PRs classified high; hold every other high-risk change.
 - Honor newer constraints such as `read only` or `do not release`.
 
 ## Select the Flow
@@ -42,9 +44,10 @@ operator path only.
 ### Authorized automatic patch release
 
 1. Confirm the verified dependency merge and classify every commit after the
-   latest immutable version tag. Require every commit to be low or explicitly
-   authorized medium risk; high-risk signals take precedence. Require the
-   medium-risk evidence defined by the eligibility reference.
+   latest immutable version tag through exact `origin/master`. Require every
+   commit to be low, explicitly authorized medium, or a fully evidenced A-stage
+   high-risk exception; high-risk signals retain their classification. Apply
+   the eligibility reference to the complete release set.
 2. Return `release_not_required` or `release_held` when the eligibility reference
    requires it.
 3. Detect an existing matching release branch, PR, tag, or GitHub Release before

@@ -76,15 +76,29 @@ An unattended medium-risk merge must provide upstream metadata and release-note
 review, complete diff and artifact attribution, exact merged-head clean-build
 evidence, no unresolved reviewer findings, and current exact-head CI. The
 release workflow consumes this evidence and holds when it is incomplete or stale.
+The trusted `direnv-action-dependabot` policy also permits an A-stage high-risk
+patch-release exception for dev-tool major and runtime dependency patch/minor
+updates, including request-path dependencies. Keep the high-risk classification.
+Require the complete original-PR evidence in
+`.agents/skills/direnv-action-release/references/release-eligibility.md` for
+every A-stage change in the release set. An earlier manual merge alone is not
+release evidence. Runtime major, install-script, maintainer/releaser, breaking,
+unattributable, or failing changes remain held.
+An auth/proxy/network/request-path change qualifies only when it is an
+attributable runtime dependency patch/minor update with a fully explained and
+reproducible subtree and shipped artifact, no breaking or public-contract
+change, and all original-PR and release gates passed. Hold every other change
+in those paths.
 
 1. Verify the dependency PR's exact-head merge and inventory every commit after
-   the latest immutable version tag.
-2. Require every commit in the complete release set to be classified low or
-   explicitly authorized medium risk and require the set to be patch-safe.
-   High-risk signals take precedence. Dev-only dependency, lint, test, CI, and
-   docs-only sets are a no-op when runtime artifacts remain unchanged. An
-   authorized medium-risk dev bundler may qualify when its `dist/**` changes are
-   expected, attributable, and reproducible. Hold on releaser, high-risk,
+   the latest immutable version tag through the exact `origin/master` source.
+2. Require every commit in the complete release set to be classified low,
+   explicitly authorized medium, or fully evidenced A-stage high risk; require
+   the set to be patch-safe. High-risk classification takes precedence.
+   Dev-only dependency, lint, test, CI, and docs-only sets are a no-op when
+   shipped runtime artifacts remain unchanged. An authorized medium-risk or
+   A-stage dev bundler may qualify when its `dist/**` changes are expected,
+   attributable, and reproducible. Hold on releaser, other high-risk,
    unclassified, breaking, ambiguous, unexpected, or non-reproducible changes.
 3. Confirm the next patch version has no conflicting local or remote branch,
    release PR, immutable tag, or GitHub Release.
@@ -130,10 +144,16 @@ release workflow consumes this evidence and holds when it is incomplete or stale
    ```
 
 7. Complete the standard reviewer procedure and exact-head GitHub CI. Immediately
-   before merge, re-check base, head, CI, release-set eligibility, and version
-   collisions. Merge with a merge commit.
+   before merge, re-check base, head, CI, release-set eligibility through current
+   `origin/master`, and version collisions. If the base moved, merge current
+   `origin/master` into the release branch without overwriting conflicts, then
+   reclassify the complete set, rerun the full local gate and clean-build checks,
+   push the new head, and repeat the standard reviewer procedure and exact-head
+   CI. Re-check base and head again; if they move, repeat or hold when convergence
+   cannot be proven. Merge with a merge commit only after that validation.
 8. Read back the release merge and require `origin/master` to equal that exact
-   merge commit. Continue with Phase 2 and Phase 3 from that commit. Before
+   merge commit. Continue with Phase 2, create and read back the matching
+   non-draft GitHub Release, then continue with Phase 3 from that commit. Before
    moving `v1`, record and re-check its raw remote tag-object OID and peeled
    target. Use a raw-OID compare-and-swap, retain a strictly newer compatible
    release target, and hold on any other unexpected target.
@@ -258,6 +278,12 @@ Expected result:
 
 Expected result:
 - The repository has a new immutable version tag such as `v1.1.4`.
+
+Before moving `v1`, create the matching non-draft, non-prerelease GitHub Release
+from that immutable tag and read back its tag, target, and publication state.
+If the tag or Release already exists, verify it matches the intended commit and
+reuse it; hold on any conflicting target. A tag without a verified Release is a
+partial result, not permission to move `v1`.
 
 ---
 
