@@ -49,7 +49,8 @@ Use this checklist after reading `RELEASE_RUNBOOK.md`.
 
 1. Verify handoff and release set:
    - prove the dependency PR merge and parents;
-   - inventory `<last-version-tag>..origin/master` and linked PRs;
+   - inventory `<last-version-tag>..origin/master` at an exact source SHA and
+     linked PRs, including fully evidenced A-stage high-risk exceptions;
    - apply `release-eligibility.md` and stop on no-op or hold.
 2. Check collisions:
    - local and remote `release/<next-version-tag>` refs;
@@ -77,11 +78,14 @@ Use this checklist after reading `RELEASE_RUNBOOK.md`.
 6. Run the standard reviewer procedure, address authorized findings, and wait
    for exact-head GitHub CI.
 7. Re-check base, exact head, CI, version collision state, and release-set
-   eligibility immediately before merge; merge with a merge commit.
+   eligibility immediately before merge. If the base moved, reclassify the
+   added commits and rerun the updated head's gates; then merge with a merge
+   commit.
 8. Read back the release PR merge and fast-forward local `master`.
 9. Require `origin/master` to equal the exact release merge commit before
    creating the annotated immutable tag.
-10. Re-check tag absence, push the immutable tag, and create the GitHub Release.
+10. Re-check tag absence, push the immutable tag, and create and read back the
+    matching non-draft, non-prerelease GitHub Release before moving `v1`.
 11. Re-check the old remote `v1` raw tag-object OID and peeled target. If it
     already targets the intended release, continue. If it targets a strictly
     newer compatible immutable release, retain it and continue. Hold on any

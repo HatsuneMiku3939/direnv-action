@@ -4,14 +4,16 @@
 - Treat direct `master` push as a manual operator path only. An automatic patch
   handoff must use a dedicated release-preparation PR.
 - Use the Node version from `.nvmrc`.
-- Classify every commit since the latest immutable version tag before automatic
-  patch preparation. Require low or explicitly authorized medium risk and hold
-  on high-risk, unclassified, or non-patch-safe commits.
+- Classify every commit since the latest immutable version tag through the
+  exact release source before automatic patch preparation. Require low,
+  explicitly authorized medium, or fully evidenced A-stage high risk; hold on
+  every other high-risk, unclassified, or non-patch-safe commit.
 - Require the exact merged dependency head to remain clean after its baseline
   install and full build before applying a release version change.
-- Classify the source change before generated `dist/**`. An explicitly authorized
-  medium-risk dev bundler may qualify only when its artifacts are expected,
-  attributable, and reproducible. Releaser changes always hold.
+- Classify the source change before generated `dist/**`. An explicitly
+  authorized medium-risk or A-stage dev bundler may qualify only when its
+  artifacts are expected, attributable, and reproducible. Releaser changes
+  always hold.
 - Always run `npm run prepare` explicitly after the version bump, then run
   `npm run all` and both full and production audits.
 - Do not hand-edit `dist/`. After the release-preparation commit, regenerate it
