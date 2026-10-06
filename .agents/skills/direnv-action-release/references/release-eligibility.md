@@ -54,9 +54,13 @@ PR or authorize other high-risk changes.
   production-dependency, runtime-security, or authorized dev bundler/build-tool
   change. Generated `dist/**` must be expected, attributable, and reproducible;
   it is not an independent reason to release.
-- No install script, maintainer/releaser warning, A-exception-ineligible
-  auth/proxy/network/request-path change, unexpected generated artifact, or
-  failing gate exists.
+- No install script, maintainer/releaser warning, unexpected generated
+  artifact, or failing gate exists. An auth/proxy/network/request-path change
+  qualifies only when it is an attributable runtime dependency patch/minor
+  update in the A-stage exception, its complete transitive subtree and shipped
+  artifact are explained and reproducible, it has no breaking or public-contract
+  change, and every original-PR and release gate passes. Hold every other such
+  change.
 
 Classify the cause before generated effects. Return `release_not_required` when
 changes are limited to dev-only lockfile, lint, test, CI, or documentation

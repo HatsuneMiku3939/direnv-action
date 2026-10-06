@@ -23,6 +23,9 @@
 - Detect existing release branches, PRs, tags, and Releases before every create;
   reuse exact matches and stop on conflicts.
 - Re-check the affected ref or exact PR head before every remote write.
+- If the release PR base moves, merge the current base into its branch and rerun
+  release-set classification, full local gates, reviewer, and CI on the new head
+  before merging the PR.
 - Publish both the immutable version tag and the moving `v1` tag.
 - Move `v1` only with a raw tag-object `--force-with-lease`. If another writer
   advances it to a strictly newer compatible immutable release, retain that

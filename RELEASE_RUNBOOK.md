@@ -84,6 +84,11 @@ Require the complete original-PR evidence in
 every A-stage change in the release set. An earlier manual merge alone is not
 release evidence. Runtime major, install-script, maintainer/releaser, breaking,
 unattributable, or failing changes remain held.
+An auth/proxy/network/request-path change qualifies only when it is an
+attributable runtime dependency patch/minor update with a fully explained and
+reproducible subtree and shipped artifact, no breaking or public-contract
+change, and all original-PR and release gates passed. Hold every other change
+in those paths.
 
 1. Verify the dependency PR's exact-head merge and inventory every commit after
    the latest immutable version tag through the exact `origin/master` source.
@@ -140,9 +145,12 @@ unattributable, or failing changes remain held.
 
 7. Complete the standard reviewer procedure and exact-head GitHub CI. Immediately
    before merge, re-check base, head, CI, release-set eligibility through current
-   `origin/master`, and version collisions. If the base moved, reclassify added
-   commits and rerun the gates on the updated exact head. Merge with a merge
-   commit only after that validation.
+   `origin/master`, and version collisions. If the base moved, merge current
+   `origin/master` into the release branch without overwriting conflicts, then
+   reclassify the complete set, rerun the full local gate and clean-build checks,
+   push the new head, and repeat the standard reviewer procedure and exact-head
+   CI. Re-check base and head again; if they move, repeat or hold when convergence
+   cannot be proven. Merge with a merge commit only after that validation.
 8. Read back the release merge and require `origin/master` to equal that exact
    merge commit. Continue with Phase 2, create and read back the matching
    non-draft GitHub Release, then continue with Phase 3 from that commit. Before

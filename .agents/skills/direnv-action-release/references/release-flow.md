@@ -78,9 +78,12 @@ Use this checklist after reading `RELEASE_RUNBOOK.md`.
 6. Run the standard reviewer procedure, address authorized findings, and wait
    for exact-head GitHub CI.
 7. Re-check base, exact head, CI, version collision state, and release-set
-   eligibility immediately before merge. If the base moved, reclassify the
-   added commits and rerun the updated head's gates; then merge with a merge
-   commit.
+   eligibility immediately before merge. If the base moved, merge current
+   `origin/master` into the release branch, resolve only understood conflicts,
+   reclassify the complete set, rerun the full local and clean-build gates,
+   push the new head, and repeat the standard reviewer procedure and exact-head
+   CI. Re-check base and head; repeat or hold if they move again. Then merge
+   with a merge commit.
 8. Read back the release PR merge and fast-forward local `master`.
 9. Require `origin/master` to equal the exact release merge commit before
    creating the annotated immutable tag.
