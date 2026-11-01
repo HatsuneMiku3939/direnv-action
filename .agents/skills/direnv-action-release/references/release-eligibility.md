@@ -1,111 +1,109 @@
 # Automatic patch-release eligibility
 
-Use this contract only for a trusted automatic handoff after a verified
-Dependabot merge. Do not use it to broaden the Dependabot merge-risk policy.
+Use this contract for a trusted automatic handoff after a verified Dependabot
+merge. It consumes merge/remediation evidence; it never creates write authority.
+Read authority from the verified `origin/master` snapshot, not PR-head edits.
 
-## Require a verified risk handoff
+## Retained risk and allowed evidence
 
-Consume the classification produced by `dependabot-pr-maintainer`; do not infer
-an easier class from release impact:
+Keep the maintainer's complete-subtree classification. Runtime dependencies,
+majors, install scripts, request-path code, and ownership warnings remain high;
+expected artifacts or passing tests do not turn them medium.
 
-- medium risk includes a direct dev dependency with extra attributable
-  transitive churn, a non-high-risk security fix with notable subtree changes,
-  a fully attributable grouped dev update, or a dev bundler/build-tool update
-  with expected reproducible artifacts;
-- high risk includes a major update, runtime dependency, install script,
-  maintainer/releaser change, auth/proxy/network/request-path library,
-  unexpected generated artifact, breaking change, or ambiguous surface; and
-- any high-risk signal takes precedence over a medium-risk shape.
+Require upstream release/breaking notes assessed against actual usage, registry
+integrity and available signatures/provenance, script/ownership inspection,
+complete dependency and generated-module attribution, clean reproducible builds,
+consumer-level regressions, full local checks, independent reviewer Findings: 0,
+current exact-head CI, and exact merge-parent read-back for high remediation.
+Missing optional provenance is recorded; failed verification is a hold.
 
-For a medium-risk handoff, require upstream metadata and release-note review,
-complete diff and artifact attribution, exact merged-head clean-build evidence,
-no unresolved reviewer findings, and current exact-head CI. Hold when this
-evidence is incomplete or stale.
+Allowed categories under explicit trusted operator authority are:
 
-The trusted `direnv-action-dependabot` operator policy also permits an A-stage
-high-risk release exception for a dev-tool major update or runtime dependency
-patch/minor update, including request-path dependencies. Keep the high-risk
-classification. For each such PR in the complete release set, require the
-original exact-head merge read-back, upstream breaking-note review against
-actual repository usage, complete transitive-subtree and generated-artifact
-attribution, reproducible `dist/**`, both npm audits, the full local gate,
-reviewer findings resolved, and current exact-head CI. A prior manual merge
-alone does not supply this evidence. Hold on runtime major updates, install
-scripts, maintainer/releaser changes, actual breaking or public-contract
-changes, unexplained artifacts, and unavailable, stale, failing, or ambiguous
-gates. The exception changes release eligibility only; it does not relabel the
-PR or authorize other high-risk changes.
+- low and authorized medium changes with their applicable original merge gates;
+- fully evidenced historical A-stage dev-tool major or runtime patch/minor
+  changes, including request-path libraries;
+- high verified dependency remediation under
+  [the repository contract](../../../../docs/maintenance/dependency-remediation.md),
+  including runtime majors, related parent/transitive updates, narrow tracked
+  compatibility patches, and necessary install/prepare/build changes;
+- previously explicitly approved high/manual changes with recorded authority,
+  attributable independently reviewed scope, and sufficient current whole-set
+  patch-safety evidence. A prior manual merge or approval alone is insufficient.
 
-## Require all conditions
+An internal dependency API break may be adapted while preserving the Action's
+public contract. Hold caller-facing breaking or contract-expanding behavior,
+required migrations, unverified maintainer/releaser or ownership changes,
+unattributable artifacts, failed verification, and stale/unavailable/ambiguous
+required gates. An install/build repair is eligible only with the repository
+contract's scope, clean-install, mismatch-failure, and reproducibility evidence.
 
-- The original PR was merged inside its authorized unattended low/medium-risk
-  boundary or the narrow A-stage high-risk exception and carries the required
-  classification evidence.
-- Merge read-back proves the verified PR head is a parent of the merge commit.
-- The latest immutable version tag and its peeled commit are unambiguous.
-- Every commit after that tag through the exact `origin/master` source commit
-  maps to a reviewed PR or an already verified release-safe commit. Reclassify
-  newly added commits if `master` moves before the release PR merge.
-- The complete release set contains only classified low, explicitly authorized
-  medium, or fully evidenced A-stage high-risk changes and is patch SemVer: no
-  breaking change, new input/output, behavior contract expansion, or required
-  migration. High-risk signals still take precedence in classification.
-- The set changes a shipped runtime surface because of a source, `action.yml`,
-  production-dependency, runtime-security, or authorized dev bundler/build-tool
-  change. Generated `dist/**` must be expected, attributable, and reproducible;
-  it is not an independent reason to release.
-- No install script, maintainer/releaser warning, unexpected generated
-  artifact, or failing gate exists. An auth/proxy/network/request-path change
-  qualifies only when it is an attributable runtime dependency patch/minor
-  update in the A-stage exception, its complete transitive subtree and shipped
-  artifact are explained and reproducible, it has no breaking or public-contract
-  change, and every original-PR and release gate passes. Hold every other such
-  change.
+## Complete release set
 
-Classify the cause before generated effects. Return `release_not_required` when
-changes are limited to dev-only lockfile, lint, test, CI, or documentation
-updates and committed runtime artifacts are unchanged, including an A-stage
-dev-tool major update with no shipped effect. An authorized medium-risk or
-A-stage dev bundler may qualify when its generated `dist/**` is expected,
-attributable, and reproducible. Decide release impact before a version bump;
-the version bump's generated `dist/**` changes cannot prove that a release was
-needed.
-Return `release_held` for unexpected or non-reproducible generated output, or
-when a releaser change appears.
+Require all of the following:
 
-Return `release_held` when any commit is unclassified, the release set includes
-high-risk change outside the fully evidenced A-stage exception, patch SemVer is
-uncertain, a matching release artifact conflicts, or a required gate cannot be
-proven current. Do not treat a missing required shipped `dist/**` update as a
-no-op; hold until the source and distributable agree.
+- The triggering bot PR and every required companion/replacement merged under
+  their applicable authority. Every merge read-back proves the verified head is
+  a parent. Record original/companion identities separately.
+- The latest immutable version tag and peeled commit are unambiguous. Inventory
+  every commit after it through the exact current `origin/master`, including
+  companion changes and any earlier manual/high members.
+- Each commit maps to a reviewed PR or independently verified release-safe
+  commit in an allowed category. No-op impact alone cannot classify policy or
+  ownership changes low. Reclassify and revalidate if master moves.
+- The entire set is patch SemVer for the Action: no new input/output, behavior
+  contract expansion, required migration, supported runtime/platform removal,
+  or intended caller-facing break. Dependency major versions alone do not set
+  the Action's version.
+- All required repairs are already present in current master. Both whole-set
+  `npm audit` and `npm audit --omit=dev` report zero findings. Map older audit
+  reports to their actual fixes transparently; do not call historical failures
+  clean or use a predicted future merge as closure. A combined local preflight
+  is not a substitute for the merged final head and its release gates.
+- Expected shipped changes are fully attributable and reproducible, including
+  optional runtime modules pulled into the bundle by development tools.
+  Generated normalization must preserve string/template values; deterministic
+  output alone is insufficient.
+
+Release need is determined **before** the version bump. Source, action metadata,
+production dependencies, runtime security fixes, or authorized build-tool or
+verified compatibility changes may have real shipped impact. Version-bump
+artifacts cannot establish that need. Do not treat missing required dist updates
+as a no-op.
+
+Return `release_not_required` only after the entire set is in allowed categories
+and has no shipped impact. Return `release_held` for unclassified or unauthorized
+high changes, uncertain patch safety, incomplete repair, unexpected or
+nonreproducible output, verification failure, missing evidence, or collisions.
+No routine user approval is needed for an already authorized class whose full
+evidence passes; do not expand the class to avoid a hold.
 
 ## Version and collision checks
 
 - Parse the highest immutable `v1.x.y` tag and increment only its patch component.
-- Require `package.json` and `package-lock.json` to match the current released
-  version before preparing the next one.
-- Search local and remote refs, open and closed PRs, and GitHub Releases for the
-  intended branch and version.
-- Reuse an exact in-progress preparation. Hold on any conflicting branch, PR,
-  tag, or Release; never overwrite it.
-- Before moving `v1`, record both its raw remote tag-object OID and peeled target.
-  Treat an exact intended target as complete, retain a strictly newer compatible
-  immutable tag with a matching GitHub Release, and hold on any other target.
-  Update only with a raw-OID `--force-with-lease`; never use an unconditional
-  force push.
+- Require package.json and package-lock.json to match the released version
+  before preparing the next one.
+- Inspect local/remote release branches, open/closed matching PRs, immutable
+  tags, GitHub Releases, and the moving v1 before creating anything. Reuse an
+  exact matching preparation; hold on conflicts.
+- Record and recheck the remote v1 raw tag-object OID and peeled target. Accept
+  the intended version, or retain a strictly newer compatible immutable version
+  with exactly one published matching Release and master ancestry. Otherwise
+  hold. Change v1 only with a raw-OID compare-and-swap.
 
-## Required evidence
+## Required release evidence
 
-- release-set commit and PR inventory;
-- exact source `origin/master` SHA;
-- Node and npm versions from `.nvmrc`;
-- clean `npm ci`, mandatory post-version `npm run prepare`, `npm run all`,
-  `npm audit`, `npm audit --omit=dev`, and `git diff --check`;
-- a post-commit `npm run prepare` that leaves the complete working tree clean;
-- expected file set for the release preparation;
-- reviewer findings and exact-head GitHub CI;
-- release PR merge commit and parent relationship;
-- peeled `origin/master`, immutable tag, and `v1` targets plus the raw `v1` tag
-  object and GitHub Release read-back. Final `v1` evidence must come from fresh
-  remote refs and map to exactly one compatible immutable version tag on
-  `master` with a non-draft, non-prerelease Release.
+- Complete commit/PR inventory, exact source master, retained risks and authority,
+  original/companion heads, merge-parent read-backs, and repair closure.
+- Node/npm versions, clean npm ci, full npm run all, real consumer/failure paths,
+  both zero-finding audits, signatures/provenance assessment and diff checks.
+- Explicit dist regeneration after the version change and a clean whole-tree
+  post-commit rebuild; all exact-version documentation pins updated.
+- Independent standard reviewer Findings: 0 and current exact-head release CI.
+- Release PR merge commit and verified parent; immutable annotated patch tag,
+  exactly one non-draft/non-prerelease GitHub Release; fresh raw/peeled v1 and
+  immutable refs, compatible version and master ancestry.
+
+The reviewed release-preparation PR, merge commit, mandatory rebuild, immutable
+publication order, raw-OID v1 CAS, and partial-failure rules remain unchanged.
+No direct master push, npm publish, minor/major release, immutable replacement,
+branch-rule bypass, or repository-settings change is authorized here.
