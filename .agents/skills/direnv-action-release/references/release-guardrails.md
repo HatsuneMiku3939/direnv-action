@@ -6,14 +6,19 @@
 - Use the Node version from `.nvmrc`.
 - Classify every commit since the latest immutable version tag through the
   exact release source before automatic patch preparation. Require low,
-  explicitly authorized medium, or fully evidenced A-stage high risk; hold on
-  every other high-risk, unclassified, or non-patch-safe commit.
+  explicitly authorized medium, fully evidenced A-stage or verified-remediation
+  high risk, or previously approved high changes meeting release eligibility.
+  Hold unclassified, unauthorized, or non-patch-safe members.
 - Require the exact merged dependency head to remain clean after its baseline
   install and full build before applying a release version change.
 - Classify the source change before generated `dist/**`. An explicitly
   authorized medium-risk or A-stage dev bundler may qualify only when its
-  artifacts are expected, attributable, and reproducible. Releaser changes
-  always hold.
+  artifacts are expected, attributable, and reproducible. Verified dependency
+  compatibility repairs may also qualify under explicit authority. Unverified
+  maintainer/releaser or ownership changes always hold.
+- Require final complete-set audits with zero findings; companion preflight
+  evidence never waives a failing merge/release audit. Inspect optional modules
+  introduced through dev tools and preserve string/template semantics.
 - Always run `npm run prepare` explicitly after the version bump, then run
   `npm run all` and both full and production audits.
 - Do not hand-edit `dist/`. After the release-preparation commit, regenerate it

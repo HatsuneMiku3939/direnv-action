@@ -50,7 +50,8 @@ Use this checklist after reading `RELEASE_RUNBOOK.md`.
 1. Verify handoff and release set:
    - prove the dependency PR merge and parents;
    - inventory `<last-version-tag>..origin/master` at an exact source SHA and
-     linked PRs, including fully evidenced A-stage high-risk exceptions;
+     linked PRs, including companions, verified remediation, historical A-stage
+     exceptions, and explicitly approved high changes meeting eligibility;
    - apply `release-eligibility.md` and stop on no-op or hold.
 2. Check collisions:
    - local and remote `release/<next-version-tag>` refs;
