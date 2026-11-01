@@ -26,6 +26,8 @@ jobs:
       with:
         node-version: 24
     - run: npm ci
+    - name: Verify cache glob compatibility
+      run: npm test -- dependency-compat.test.js
     - run: npm run prepare
     - uses: ./
       with:

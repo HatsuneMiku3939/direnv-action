@@ -137,6 +137,33 @@ npm run all
 
 The Vitest unit tests cover binary URL selection, downloaded binary checksum verification, tool installation cache branches, environment export behavior, required variable validation, secret masking, and the main action flow with mocked GitHub Actions APIs.
 
+### Temporary minimatch compatibility patch
+
+The dependency overrides replace minimatch 10 with 11.0.3 to address
+[GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249).
+Minimatch 11 removes `matchOne()`, which `@actions/glob` 0.7.0 uses for partial
+path matching. The tracked patch in `patches/` switches that call to the public
+`match(path, true)` API, preserving path normalization and the existing root
+handling. Glob disables brace expansion and minimatch negation, so this call
+evaluates the same single pattern without applying exclusion twice.
+
+`npm ci` runs the existing `prepare` lifecycle, which now applies the patch with
+`patch-package --error-on-fail` before bundling. Keep development dependencies
+installed when rebuilding; do not bypass lifecycle scripts for release builds.
+The glob version is pinned to the patched version, and a patch mismatch fails
+the build. Reapplying the patch is safe. The generated bundle contains the
+patched consumer; installing dependencies is not required to run the action.
+The build also removes trailing whitespace preserved by ncc from dependency
+sources, so regenerated artifacts pass the repository's whitespace checks.
+
+`dependency-compat.test.js` exercises real cache glob traversal, including
+nested and excluded paths, dot-directories, missing paths, and workspaces with
+spaces or Unicode. These tests also run on Linux and macOS CI. Remove the glob
+pin, patch, and patch-package when a released `@actions/glob` supports a patched
+minimatch version directly; remove the minimatch override when its consumers
+no longer resolve vulnerable versions. Rerun the compatibility tests and
+regenerate `dist/` before removing either workaround.
+
 ## Supported platforms and architectures
 
 Since v1.0.7, the following platform and architecture combinations are supported.

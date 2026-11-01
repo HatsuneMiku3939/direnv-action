@@ -5,8 +5,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint index.js index.test.js",
-    "prepare": "ncc build index.js -o dist --source-map",
+    "lint": "eslint index.js index.test.js dependency-compat.test.js scripts/*.js",
+    "prepare": "patch-package --error-on-fail && ncc build index.js -o dist --source-map && node scripts/normalize-dist.js",
     "test": "vitest run",
     "all": "npm run lint && npm run prepare && npm run test"
   },
@@ -36,6 +36,11 @@
     "@vercel/ncc": "^0.45.0",
     "eslint": "^10.13.0",
     "globals": "^17.13.0",
+    "patch-package": "8.0.1",
     "vitest": "^5.0.5"
+  },
+  "overrides": {
+    "minimatch@^10.2.5": "11.0.3",
+    "@actions/glob": "0.7.0"
   }
 }

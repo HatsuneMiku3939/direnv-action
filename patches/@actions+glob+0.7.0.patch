@@ -1,0 +1,12 @@
+diff --git a/node_modules/@actions/glob/lib/internal-pattern.js b/node_modules/@actions/glob/lib/internal-pattern.js
+--- a/node_modules/@actions/glob/lib/internal-pattern.js
++++ b/node_modules/@actions/glob/lib/internal-pattern.js
+@@ -101,7 +101,7 @@
+         if (pathHelper.dirname(itemPath) === itemPath) {
+             return this.rootRegExp.test(itemPath);
+         }
+-        return this.minimatch.matchOne(itemPath.split(IS_WINDOWS ? /\\+/ : /\/+/), this.minimatch.set[0], true);
++        return this.minimatch.match(IS_WINDOWS ? itemPath.replace(/\\/g, '/') : itemPath, true);
+     }
+     /**
+      * Escapes glob patterns within a path
