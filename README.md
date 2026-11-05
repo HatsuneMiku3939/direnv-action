@@ -137,6 +137,12 @@ npm run all
 
 The Vitest unit tests cover binary URL selection, downloaded binary checksum verification, tool installation cache branches, environment export behavior, required variable validation, secret masking, and the main action flow with mocked GitHub Actions APIs.
 
+CI runs the Action integration and real cache/glob compatibility tests on
+`ubuntu-latest` and the pinned ARM64 `macos-26` runner. The macOS matrix keeps
+the checksum for the `direnv.darwin-arm64` binary. GitHub retired the previous
+macOS 14 runner on November 2, 2026; see the
+[runner retirement announcement](https://github.blog/changelog/2026-10-01-github-actions-macos-14-runner-image-retirement/).
+
 ### Temporary minimatch compatibility patch
 
 The dependency overrides replace minimatch 10 with 11.0.3 to address
