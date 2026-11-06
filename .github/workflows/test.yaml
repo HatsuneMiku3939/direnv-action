@@ -17,7 +17,7 @@ jobs:
         include:
           - os: ubuntu-latest
             direnv-checksum: sha256:c0443e4600e4b93ec253e663fff18b5fb490cc555b1fc72f0ab22beaa2bb9810
-          - os: macos-14
+          - os: macos-26
             direnv-checksum: sha256:dd053025ecae958118b3db2292721464e68da4fb319b80905a4cebba5ba9f069
     runs-on: ${{ matrix.os }}
     steps:
