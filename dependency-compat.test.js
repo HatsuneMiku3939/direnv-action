@@ -110,3 +110,20 @@ test('cache glob keeps nested traversal and exclusion patterns', async () => {
     'keep.txt', join('nested', 'deep', 'keep.txt'), join('nested', 'keep.txt'),
   ].sort());
 });
+
+test('cache glob preserves character classes and literal bracket matching', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'direnv-glob-'));
+  fixtures.push(root);
+  await mkdir(join(root, 'nested'), { recursive: true });
+  for (const file of ['nested/keep.txt', 'nested/keep.md', 'nested/skip.json', 'nested/[literal].txt']) {
+    await writeFile(join(root, file), 'fixture');
+  }
+  const globber = await glob.create(`${root}/**/keep.[tm]*`);
+  expect((await globber.glob()).map((file) => relative(root, file)).sort()).toEqual([
+    join('nested', 'keep.md'), join('nested', 'keep.txt'),
+  ].sort());
+  const literal = await glob.create(`${root}/**/[[]literal].txt`);
+  expect((await literal.glob()).map((file) => relative(root, file))).toEqual([
+    join('nested', '[literal].txt'),
+  ]);
+});

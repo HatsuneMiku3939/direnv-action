@@ -164,7 +164,11 @@ sources, so regenerated artifacts pass the repository's whitespace checks.
 
 `dependency-compat.test.js` exercises real cache glob traversal, including
 nested and excluded paths, dot-directories, missing paths, and workspaces with
-spaces or Unicode. These tests also run on Linux and macOS CI. Remove the glob
+spaces or Unicode, character classes, and literal brackets. These tests also run on Linux
+and macOS CI. ESLint's nested minimatch dependency can update the shared
+`@isaacs/nonrecursive-glob-match` used by the runtime cache traversal; regenerate
+the bundle and rerun these consumer tests for such development-tool updates.
+Remove the glob
 pin, patch, and patch-package when a released `@actions/glob` supports a patched
 minimatch version directly; remove the minimatch override when its consumers
 no longer resolve vulnerable versions. Rerun the compatibility tests and
